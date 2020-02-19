@@ -18,16 +18,16 @@
 
     <div class="right-menu">
 
-      <el-tooltip  effect="dark" content="通知" placement="bottom">
-        <a @click="notifyDrawer = true" class="navbar-icon">
+<!--      <el-tooltip  effect="dark" content="通知" placement="bottom">-->
+        <a @click.sync="notifyDrawer = true" class="navbar-icon">
           <el-badge style="position: initial;" :value="notifyNum" :max="99">
             <i class="el-icon-bell"></i>
           </el-badge>
         </a>
-      </el-tooltip>
-      <el-tooltip class="item" effect="dark"  content="日历" placement="bottom">
+<!--      </el-tooltip>-->
+<!--      <el-tooltip class="item" effect="dark"  content="日历" placement="bottom">-->
         <a @click="calDrawerWindow" class="navbar-icon"><i class="el-icon-date"></i></a>
-      </el-tooltip>
+<!--      </el-tooltip>-->
       <el-divider class="navbar-center" direction="vertical"></el-divider>
 
       <template v-if="device!=='mobile'">
@@ -537,7 +537,7 @@ export default {
   position: absolute;
   display: inline-block;
   left: 40%;
-  top: 7px;
+  top: 5px;
   width: 300px;
   .el-input {
     position: relative;
