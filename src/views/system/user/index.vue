@@ -416,6 +416,7 @@ export default {
           { required: true, message: "用户密码不能为空", trigger: "blur" }
         ],
         email: [
+          { required: true, message: "邮箱地址不能为空", trigger: "blur" },
           {
             type: "email",
             message: "'请输入正确的邮箱地址",
@@ -423,6 +424,7 @@ export default {
           }
         ],
         phonenumber: [
+          { required: true, message: "手机号码不能为空", trigger: "blur" },
           {
             pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/,
             message: "请输入正确的手机号码",
@@ -448,7 +450,7 @@ export default {
       this.sexOptions = response.data;
     });
     this.getConfigKey("sys.user.initPassword").then(response => {
-      this.initPassword = response.data;
+      this.initPassword = response.msg;
     });
   },
   methods: {
@@ -482,16 +484,16 @@ export default {
     handleStatusChange(row) {
       let text = row.status === "0" ? "启用" : "停用";
       this.$confirm('确认要"' + text + '""' + row.userName + '"用户吗?', "警告", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
-        }).then(function() {
-          return changeUserStatus(row.userId, row.status);
-        }).then(() => {
-          this.msgSuccess(text + "成功");
-        }).catch(function() {
-          row.status = row.status === "0" ? "1" : "0";
-        });
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(function() {
+        return changeUserStatus(row.userId, row.status);
+      }).then(() => {
+        this.msgSuccess(text + "成功");
+      }).catch(function() {
+        row.status = row.status === "0" ? "1" : "0";
+      });
     },
     // 取消按钮
     cancel() {
@@ -567,14 +569,14 @@ export default {
         confirmButtonText: "确定",
         cancelButtonText: "取消"
       }).then(({ value }) => {
-          resetUserPwd(row.userId, value).then(response => {
-            if (response.code === 200) {
-              this.msgSuccess("修改成功，新密码是：" + value);
-            } else {
-              this.msgError(response.msg);
-            }
-          });
-        }).catch(() => {});
+        resetUserPwd(row.userId, value).then(response => {
+          if (response.code === 200) {
+            this.msgSuccess("修改成功，新密码是：" + value);
+          } else {
+            this.msgError(response.msg);
+          }
+        });
+      }).catch(() => {});
     },
     /** 提交按钮 */
     submitForm: function() {
@@ -608,20 +610,20 @@ export default {
     handleDelete(row) {
       const userIds = row.userId || this.ids;
       this.$confirm('是否确认删除用户编号为"' + userIds + '"的数据项?', "警告", {
-          confirmButtonText: "确定",
-          cancelButtonText: "取消",
-          type: "warning"
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
         }).then(function() {
           return delUser(userIds);
         }).then(() => {
           this.getList();
           this.msgSuccess("删除成功");
         }).catch(function() {});
-    },
-    /** 导出按钮操作 */
-    handleExport() {
-      const queryParams = this.queryParams;
-      this.$confirm('是否确认导出所有用户数据项?', "警告", {
+      },
+      /** 导出按钮操作 */
+      handleExport() {
+        const queryParams = this.queryParams;
+        this.$confirm('是否确认导出所有用户数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
@@ -630,34 +632,42 @@ export default {
         }).then(response => {
           this.download(response.msg);
         }).catch(function() {});
-    },
-    /** 导入按钮操作 */
-    handleImport() {
-      this.upload.title = "用户导入";
-      this.upload.open = true;
-    },
-    /** 下载模板操作 */
-    importTemplate() {
-      importTemplate().then(response => {
-        this.download(response.msg);
-      });
-    },
-    // 文件上传中处理
-    handleFileUploadProgress(event, file, fileList) {
-      this.upload.isUploading = true;
-    },
-    // 文件上传成功处理
-    handleFileSuccess(response, file, fileList) {
-      this.upload.open = false;
-      this.upload.isUploading = false;
-      this.$refs.upload.clearFiles();
-      this.$alert(response.msg, "导入结果", { dangerouslyUseHTMLString: true });
-      this.getList();
-    },
-    // 提交上传文件
-    submitFileForm() {
-      this.$refs.upload.submit();
+      },
+      /** 导入按钮操作 */
+      handleImport() {
+        this.upload.title = "用户导入";
+        this.upload.open = true;
+      },
+      /** 下载模板操作 */
+      importTemplate() {
+        importTemplate().then(response => {
+          this.download(response.msg);
+        });
+      },
+      // 文件上传中处理
+      handleFileUploadProgress(event, file, fileList) {
+        this.upload.isUploading = true;
+      },
+      // 文件上传成功处理
+      handleFileSuccess(response, file, fileList) {
+        this.upload.open = false;
+        this.upload.isUploading = false;
+        this.$refs.upload.clearFiles();
+        this.$alert(response.msg, "导入结果", { dangerouslyUseHTMLString: true });
+        this.getList();
+      },
+      // 提交上传文件
+      submitFileForm() {
+        this.$refs.upload.submit();
+      }
     }
-  }
-};
+  };
 </script>
+<style scoped>
+/deep/ .el-tree-node__content {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  cursor: pointer;
+}
+</style>

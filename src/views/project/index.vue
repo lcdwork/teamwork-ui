@@ -22,6 +22,7 @@
 <script>
 import sortTask from '@/views/public/sortTask'
 import newProjectDialog from '@/views/public/newProjectDialog'
+import { addProject, listProject } from "@/api/project";
 export default {
   name: 'ProjectManage',
   components: {
@@ -58,7 +59,14 @@ export default {
       console.log(val)
     },
     submitForm(val) {
-      console.log(val)
+      addProject(val).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          // this.open = false;
+        } else {
+          this.msgError(response.msg);
+        }
+      });
     },
     projectInfo(item) {
       console.log(item)
