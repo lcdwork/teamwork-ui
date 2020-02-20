@@ -42,7 +42,7 @@
         <el-button type="danger" @click="submitProjectDelForm" :loading="delLoading">{{ delLoading ? '提交中 ...' : '删 除' }}</el-button>
       </span>
     </el-dialog>
-    <new-project-dialog dialogTitle="编辑项目" :dialogVisible.sync="editProjectDialog" @handleCancel="editProjectDialog = false" @handleClose="handleEditProjectClose" @submitForm="submitEditProjectForm"></new-project-dialog>
+    <new-project-dialog :dialogDate="editProjectDate" :dialogForm="editProjectInfo" dialogTitle="编辑项目" :dialogVisible.sync="editProjectDialog" @handleCancel="editProjectDialog = false" @handleClose="handleEditProjectClose" @submitForm="submitEditProjectForm"></new-project-dialog>
     <notify-drawer drawerTitle="操作历史" :drawerVisible="historyDrawer" @handleClose="handleHistoryClose">
       <el-timeline class="demo-drawer__timeline" :style="{'height': drawerHeight + 'px'}">
         <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
@@ -66,6 +66,8 @@ import newTaskDialog from '@/views/public/newTaskDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
+import { updateProject, delProject } from "@/api/project";
+let mainLoading
 export default {
   name: 'ProjectInfo',
   components: {
@@ -86,11 +88,9 @@ export default {
       editProjectDialog: false,
       delTaskDialog: false,
       delProjectDialog: false,
-      projectInfo: {
-        projectId: null,
-        projectName: null
-      },
+      projectInfo: {},
       editProjectInfo: {},
+      editProjectDate: [],
       newTaskDialog: false,
       editTaskDialog: null,
       newTaskForm: {
@@ -188,11 +188,10 @@ export default {
       var routerParams = this.$route.params
       if (routerParams.projectId === null || routerParams.projectId === undefined) {
         this.$message.error('未获取到项目ID，请重新选择项目！')
-        this.$router.push('/manage/projectManage')
+        this.$router.push('/project/list')
         return
       }
       this.projectInfo = routerParams
-      console.log(routerParams)
     },
     newTaskFun() {
       this.newTaskForm.projectId = this.projectInfo.projectId
@@ -219,7 +218,7 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
-      console.log(val)
+
     },
     handleDelTaskClose(done) {
       this.$confirm('确认关闭？')
@@ -241,7 +240,14 @@ export default {
         .catch(_ => {})
     },
     submitEditProjectForm(val) {
-      console.log(val)
+      updateProject(val).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess("修改成功");
+          // this.open = false;
+        } else {
+          this.msgError(response.msg);
+        }
+      });
     },
     statusCommand(val) {
       console.log(val)
@@ -269,25 +275,54 @@ export default {
       }
     },
     editProjectWindow() {
+      var obj = this.projectInfo
+      // this.$delete(obj,'projectName')
+      var date = [obj.startDate, obj.endDate]
+      delete obj.startDate, obj.endDate
+      this.editProjectInfo = obj
+      this.editProjectDate = date
       this.editProjectDialog = true
     },
     submitProjectDelForm() {
-      // console.log(this.projectInfo)
-      // this.delProjectDialog = false
-      this.$notify({
-        title: '删除成功',
-        message: '即将跳转上一级页面',
-        type: 'success'
-      })
       this.delLoading = true
-      setTimeout(() => {
+      delProject(this.projectInfo.projectId).then(response => {
         this.delLoading = false
-        this.$message.error('连接超时！')
-      }, 2000)
+        if (response.code === 200) {
+          this.$notify({
+            title: '删除成功',
+            message: '项目已被删除',
+            type: 'success'
+          })
+          this.$router.push('/project/list')
+        } else {
+          this.$notify({
+            title: '删除失败',
+            message: response.msg,
+            type: 'danger'
+          })
+        }
+      }).catch(
+        this.delLoading = false
+      )
+      // this.delLoading = true
+      // setTimeout(() => {
+      //   this.delLoading = false
+      //   this.$message.error('连接超时！')
+      // }, 2000)
     },
     handleHistoryClose() {
       this.historyDrawer = false
-    }
+    },
+    startLoading() {
+      mainLoading = this.$loading({
+        lock: true,
+        // text: "Loading...",
+        target: document.querySelector('.app-main')//设置加载动画区域
+      });
+    },
+    endLoading() {
+      mainLoading.close()
+    },
   },
   mounted() {
     this.drawerHeight = window.innerHeight - 150

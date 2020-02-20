@@ -6,7 +6,7 @@
       <el-button type="primary" size="small" style="margin-right: 20px" @click="newProjectDialog = true">新建</el-button>
     </div>
     <br><br>
-    <new-project-dialog :dialogVisible.sync="newProjectDialog" @handleCancel="newProjectDialog = false" @handleClose="handleClose" @submitForm="submitForm"></new-project-dialog>
+    <new-project-dialog :loading="addLoading" :dialogVisible.sync="newProjectDialog" @handleCancel="newProjectDialog = false" @handleClose="handleClose" @submitForm="submitForm"></new-project-dialog>
     <el-col v-for="item in projectList" :key="item.id" style="width: 300px;margin-top: 20px">
       <el-card class="box-card" style="margin-left: 20px; height: 180px">
         <div slot="header" class="clearfix">
@@ -23,6 +23,7 @@
 import sortTask from '@/views/public/sortTask'
 import newProjectDialog from '@/views/public/newProjectDialog'
 import { addProject, listProject } from "@/api/project";
+let mainLoading
 export default {
   name: 'ProjectManage',
   components: {
@@ -31,27 +32,22 @@ export default {
   },
   data() {
     return {
+      addLoading: false,
       newProjectDialog: false,
-      projectList: [
-        {
-          id: 1,
-          projectName: '测试项目1',
-          remark: '此处是任务描述信息'
-        },
-        {
-          id: 2,
-          projectName: '测试项目2',
-          remark: '此处是任务描述信息'
-        },
-        {
-          id: 3,
-          projectName: '测试项目3',
-          remark: '此处是任务描述信息'
-        }
-      ],
+      projectList: [],
     }
   },
   methods: {
+    getList() {
+      this.startLoading()
+      listProject().then(response => {
+        this.endLoading()
+        console.log(response)
+        this.projectList = response.rows
+      }).catch(
+        this.endLoading()
+      )
+    },
     statusCommand(val) {
       console.log(val)
     },
@@ -59,19 +55,33 @@ export default {
       console.log(val)
     },
     submitForm(val) {
+      this.addLoading = true
       addProject(val).then(response => {
+        this.newProjectDialog = false
+        this.addLoading = false
         if (response.code === 200) {
           this.msgSuccess("新增成功");
           // this.open = false;
         } else {
           this.msgError(response.msg);
         }
-      });
+      }).catch(
+        this.addLoading = false
+      )
     },
     projectInfo(item) {
-      console.log(item)
       // this.$router.push({ path: '/manage/projectInfo', params: { projectId: item.id }});
-      this.$router.push({ name: 'project_info', params: { projectId: item.id, projectName: item.projectName }})
+      this.$router.push({ name: 'project_info', params: item})
+    },
+    startLoading() {
+      mainLoading = this.$loading({
+        lock: true,
+        // text: "Loading...",
+        target: document.querySelector('.app-main')//设置加载动画区域
+      });
+    },
+    endLoading() {
+      mainLoading.close()
     },
     handleClose(done) {
       this.$confirm('确认关闭？')
@@ -81,6 +91,9 @@ export default {
         })
         .catch(_ => {})
     },
+  },
+  mounted() {
+    this.getList()
   }
 }
 </script>

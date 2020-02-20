@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <span class="my-title-font">我创建的·10</span>
+    <span class="my-title-font">我创建的·{{ taskNum }}</span>
     <div style="float: right;">
       <sort-task @statusCommand="statusCommand" @sortCommand="sortCommand"></sort-task>
       <el-button type="primary" size="small"  @click="newTaskDialog = true">新建</el-button>
@@ -17,6 +17,8 @@ import newTaskDialog from '@/views/public/newTaskDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
+import { addTask, listTask } from "@/api/task";
+let mainLoading
 export default {
   name: 'index',
   components: {
@@ -27,6 +29,7 @@ export default {
   },
   data() {
     return {
+      taskNum: 0,
       newTaskDialog: false,
       editTaskDialog: false,
       taskData: {
@@ -70,6 +73,11 @@ export default {
     }
   },
   methods: {
+    getList() {
+      listTask().then(response => {
+        console.log(response)
+      })
+    },
     showTask(val) {
       console.log(this.editTaskDialog)
       // console.log(val)
@@ -85,7 +93,14 @@ export default {
         .catch(_ => {})
     },
     submitForm(val) {
-      console.log(val)
+      addTask(val).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          // this.open = false;
+        } else {
+          this.msgError(response.msg);
+        }
+      });
     },
     handleEditClose(done) {
       this.$confirm('确认关闭？')
@@ -103,7 +118,20 @@ export default {
     },
     sortCommand(val) {
       console.log(val)
+    },
+    startLoading() {
+      mainLoading = this.$loading({
+        lock: true,
+        // text: "Loading...",
+        target: document.querySelector('.app-main')//设置加载动画区域
+      });
+    },
+    endLoading() {
+      mainLoading.close()
     }
+  },
+  mounted() {
+    this.startLoading()
   }
 }
 </script>

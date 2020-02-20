@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
+  <el-dialog v-loading="loading" title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
     <el-form ref="form" :model="dialogForm" label-width="80px">
       <el-form-item label="所属项目">
         <el-dropdown @command="chooseProject">
@@ -13,7 +13,7 @@
         <el-input v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
       </el-form-item>
       <el-form-item label="任务时间">
-        <el-date-picker v-model="dialogForm.taskDate" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
+        <el-date-picker v-model="taskTime" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
       </el-form-item>
       <el-form-item label="任务标签">
         <el-popover v-model="tagBtnPopover" placement="bottom" trigger="click">
@@ -53,6 +53,12 @@
 <script>
 export default {
   props: {
+    loading: {
+      type: Boolean,
+      default () {
+        return true
+      }
+    },
     projectList: {
       type: Array,
       default () {
@@ -79,10 +85,12 @@ export default {
           projectId: null,
           projectName: '选择项目',
           taskName: null,
-          taskDate: null,
           remark: null
         }
       }
+    },
+    taskTime: {
+      type: Array
     }
   },
   name: "taskDialog",
@@ -163,6 +171,16 @@ export default {
     },
     handleClose(done) {
       this.$emit("handleClose")
+    },
+    submitForm() {
+      var val = this.dialogForm;
+      val.startTime = "";
+      val.stopTime = "";
+      if (null != this.taskTime && '' != this.taskTime) {
+        val.startTime = this.taskTime[0];
+        val.stopTime = this.taskTime[1];
+      }
+      this.$emit('submitForm', val)
     }
   }
 }

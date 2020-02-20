@@ -5,7 +5,7 @@
         <el-input placeholder="项目名称" v-model="dialogForm.projectName" />
       </el-form-item>
       <el-form-item label="计划时间">
-        <el-date-picker v-model="planDate" value-format="yyyy-MM-dd" type="daterange" align="left" unlink-panels range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="projectOptions" />
+        <el-date-picker v-model="dialogDate" value-format="yyyy-MM-dd" type="daterange" align="left" unlink-panels range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="projectOptions" />
       </el-form-item>
       <el-form-item label="项目人员">
         <el-tooltip v-for="item in userInfo" :key="item.id" effect="my-style" :content="item.name" placement="top">
@@ -30,8 +30,8 @@
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
-        <el-button @click="handleCancel">取 消</el-button>
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
+        <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
       </span>
   </el-dialog>
 </template>
@@ -50,7 +50,10 @@ export default {
     dialogVisible: {
       type: Boolean,
     },
-    planDate: {
+    loading: {
+      type: Boolean,
+    },
+    dialogDate: {
       type: Array
     },
     dialogForm: {
@@ -128,11 +131,11 @@ export default {
     },
     submitForm() {
       var val = this.dialogForm;
-      val.beginTime = "";
-      val.endTime = "";
-      if (null != this.planDate && '' != this.planDate) {
-        val.beginTime = this.planDate[0];
-        val.endTime = this.planDate[1];
+      val.startDate = "";
+      val.endDate = "";
+      if (null != this.dialogDate && '' != this.dialogDate) {
+        val.startDate = this.dialogDate[0];
+        val.endDate = this.dialogDate[1];
       }
       this.$emit('submitForm', val)
     }
