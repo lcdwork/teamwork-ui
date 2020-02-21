@@ -13,7 +13,7 @@ export function listTask(query) {
 // 查询任务详细
 export function getTask(taskId) {
   return request({
-    url: '/task' + praseStrEmpty(taskId),
+    url: '/task/' + praseStrEmpty(taskId),
     method: 'get'
   })
 }
@@ -21,7 +21,7 @@ export function getTask(taskId) {
 // 新增任务
 export function addTask(data) {
   return request({
-    url: '/task/addTask',
+    url: '/task',
     method: 'post',
     data: data
   })
@@ -39,7 +39,7 @@ export function updateTask(data) {
 // 删除任务
 export function delUser(userId) {
   return request({
-    url: '/system/user/' + userId,
+    url: '/task/' + userId,
     method: 'delete'
   })
 }

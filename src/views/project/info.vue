@@ -3,7 +3,7 @@
     <el-page-header @back="goBack" :content="projectInfo.projectName">
     </el-page-header>
     <div style="float: right;">
-      <sort-task @statusCommand="statusCommand" @sortCommand="sortCommand"></sort-task>
+      <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
       <el-dropdown @command="projectCommand">
         <span class="el-dropdown-link">项目管理<i class="el-icon-arrow-down el-icon--right"/></span>
         <el-dropdown-menu align="center">
@@ -22,9 +22,20 @@
       <!--          {{val.data.taskName}}-->
       <!--        </template>-->
     </task-card-list>
-    <new-task-dialog :dialogForm="newTaskForm" :projectList="allPojectList" :dialogVisible.sync="newTaskDialog" @handleCancel="newTaskDialog = false" @handleClose="handleNewTaskClose" @submitForm="submitNewTaskForm"></new-task-dialog>
+    <new-task-dialog
+      :loading="addTaskLoading"
+      :projectList="pojectList"
+      :dialogVisible.sync="newTaskDialog"
+      @handleCancel="newTaskDialog = false"
+      @handleClose="handleNewTaskClose"
+      @submitForm="submitNewTaskForm"/>
     <edit-task-dialog :dialogVisible.sync="editTaskDialog" @handleCancel="editTaskDialog = false" @handleClose="handleEditTaskClose" @submitForm="submitEditTaskForm"></edit-task-dialog>
-    <del-task-dialog :dialogVisible.sync="delTaskDialog" @handleCancel="delTaskDialog = false" @handleClose="handleDelTaskClose" @submitForm="submitDelTaskForm"></del-task-dialog>
+    <del-task-dialog
+      :loading="delTaskLoading"
+      :dialogVisible.sync="delTaskDialog"
+      @handleCancel="delTaskDialog = false"
+      @handleClose="handleDelTaskClose"
+      @submitForm="submitDelTaskForm"/>
     <el-dialog title="删除项目" :visible.sync="delProjectDialog" width="30%" :before-close="handleNewTaskClose">
       <span>确认删除项目？此操作不可逆！</span>
       <span slot="footer" class="dialog-footer">
@@ -57,6 +68,8 @@ import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { updateProject, delProject } from "@/api/project";
+import { addTask, delTask, listTask } from "@/api/task"
+import { listProject } from "@/api/project";
 let mainLoading
 export default {
   name: 'ProjectInfo',
@@ -72,6 +85,8 @@ export default {
   data() {
     return {
       delLoading: false,
+      addTaskLoading: false,
+      delTaskLoading: false,
       editLoading: false,
       currentPage: 10,
       drawerHeight: null,
@@ -91,6 +106,8 @@ export default {
         taskDate: null,
         remark: null
       },
+      taskSort1: [],
+      taskSort2: [],
       taskList: [
         {
           id: 1,
@@ -108,20 +125,7 @@ export default {
           taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
         }
       ],
-      allPojectList: [
-        {
-          id: 1,
-          value: '测试项目1'
-        },
-        {
-          id: 2,
-          value: '测试项目2'
-        },
-        {
-          id: 3,
-          value: '测试项目3'
-        }
-      ],
+      pojectList: [],
       activities: [
         {
           content: '活动按期开始',
@@ -156,6 +160,14 @@ export default {
   },
   created() {
     this.getParams()
+    this.getTaskList()
+    this.getProjectList()
+    this.getDicts("task_sort_status").then(response => {
+      this.taskSort1 = response.data;
+    });
+    this.getDicts("task_sort_time").then(response => {
+      this.taskSort2 = response.data;
+    });
   },
   methods: {
     handleSizeChange(val) {
@@ -184,6 +196,17 @@ export default {
       }
       this.projectInfo = routerParams
     },
+    getTaskList() {
+      listTask().then(response => {
+        console.log(response)
+      })
+    },
+    getProjectList() {
+      listProject().then(response => {
+        this.pojectList = response.rows
+        console.log(response)
+      })
+    },
     newTaskFun() {
       this.newTaskForm.projectId = this.projectInfo.projectId
       this.newTaskForm.projectName = this.projectInfo.projectName
@@ -198,7 +221,19 @@ export default {
         .catch(_ => {})
     },
     submitNewTaskForm(val) {
-      console.log(val)
+      this.addTaskLoading = true
+      addTask(val).then(response => {
+        this.addTaskLoading = true
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          this.newTaskDialog = false
+        } else {
+          this.addTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.addTaskLoading = false
+      )
     },
     handleEditTaskClose(done) {
       this.$confirm('确认关闭？')
@@ -220,7 +255,18 @@ export default {
         .catch(_ => {})
     },
     submitDelTaskForm(val) {
-      console.log(val)
+      this.delTaskLoading = true
+      delTask(val).then(response => {
+        this.delTaskLoading = false
+        if (response.code === 200) {
+          this.msgSuccess("删除成功");
+          this.delTaskDialog = false
+        } else {
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.delTaskLoading = false
+      )
     },
     handleEditProjectClose(done) {
       this.$confirm('确认关闭？')
@@ -233,11 +279,10 @@ export default {
     submitEditProjectForm(val) {
       this.editLoading = true
       updateProject(val).then(response => {
-        this.editProjectDialog = false
         this.editLoading = false
         if (response.code === 200) {
           this.msgSuccess("修改成功");
-          // this.open = false;
+          this.editProjectDialog = false
         } else {
           this.msgError(response.msg);
         }
@@ -245,10 +290,10 @@ export default {
         this.editLoading = false
       )
     },
-    statusCommand(val) {
+    sort1Command(val) {
       console.log(val)
     },
-    sortCommand(val) {
+    sort2Command(val) {
       console.log(val)
     },
     historyWindow() {

@@ -5,22 +5,27 @@
         <el-input placeholder="项目名称" v-model="dialogForm.projectName" />
       </el-form-item>
       <el-form-item label="计划时间">
-        <el-date-picker v-model="dialogDate" value-format="yyyy-MM-dd" type="daterange" align="left" unlink-panels range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" :picker-options="projectOptions" />
+        <el-date-picker
+          v-model="dialogDate"
+          value-format="yyyy-MM-dd"
+          type="daterange" align="left"
+          unlink-panels range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          :picker-options="projectOptions"/>
       </el-form-item>
       <el-form-item label="项目人员">
-        <el-tooltip v-for="item in userInfo" :key="item.id" effect="my-style" :content="item.name" placement="top">
-          <el-popover placement="bottom-start" :title="item.name" width="200" trigger="click">
-            <span>联系方式：{{ item.phone }}</span>
-            <div style="text-align: right; margin: 0">
-              <el-button type="danger" @click="removeUser(item)">移除</el-button>
-            </div>
-            <el-avatar slot="reference" style="margin: 0 5px -15px 0" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-          </el-popover>
-        </el-tooltip>
+        <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="click">
+          <span>联系方式：{{ item.phonenumber }}</span>
+          <div style="text-align: right; margin: 0">
+            <el-button type="danger" @click="removeUser(item)">移除</el-button>
+          </div>
+          <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
+        </el-popover>
         <el-popover v-model="userPopover" placement="bottom" width="200" trigger="click">
-          <el-card v-for="item in userInfo" :key="item.id" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
-            <el-avatar style="margin-bottom: -5px" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-            <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.name }}</span>
+          <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
+            <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
+            <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
           </el-card>
           <el-button slot="reference" icon="el-icon-plus" circle />
         </el-popover>
@@ -37,7 +42,7 @@
 </template>
 
 <script>
-// import '@/styles/overwrite-element-ui.scss'
+import { listUser } from "@/api/system/user";
 export default {
   name: "newProjectDialog",
   props: {
@@ -60,6 +65,7 @@ export default {
       type: Object,
       default () {
         return {
+          userList: [],
           projectName: null,
           remark: null
         }
@@ -68,8 +74,8 @@ export default {
   },
   data() {
     return {
-      userPopover: {},
-      userInfo: [],
+      userList: [],
+      userPopover: false,
       projectOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -115,13 +121,29 @@ export default {
       },
     }
   },
+  created() {
+    this.getUserList()
+  },
   methods: {
+    getUserList() {
+      listUser().then(response => {
+        this.userList = response.rows;
+      })
+    },
     removeUser(item) {
-      console.log(item)
+      this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
     },
     chooseUser(item) {
       this.userPopover = false
-      console.log(item)
+      if(this.dialogForm.userList.filter(t => t.userId == item.userId).length > 0) {
+        this.$notify({
+          title: '添加失败',
+          message: '不允许重复添加同一人员',
+          type: 'danger'
+        })
+      } else {
+        this.dialogForm.userList.push(item)
+      }
     },
     handleCancel(){
       this.$emit('handleCancel')

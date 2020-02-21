@@ -11,11 +11,9 @@
           </el-form-item>
           <el-form-item label="任务状态">
             <el-dropdown trigger="click" @command="statusCommand">
-              <span :style="{'color': statusDropdown.color}" class="status-dropdown">{{statusDropdown.title}}</span>
+              <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
               <el-dropdown-menu align="center">
-                <el-dropdown-item  style="color: #606266" command="ready">待领取</el-dropdown-item>
-                <el-dropdown-item  style="color: #409EFF" command="working">开发中</el-dropdown-item>
-                <el-dropdown-item  style="color: #67C23A" command="finish">已完成</el-dropdown-item>
+                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictValue" :style="{'color': item.cssClass}" :command="{dictValue:item.dictValue,dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -24,25 +22,23 @@
           </el-form-item>
           <el-form-item label="任务标签">
             <el-popover v-model="tagBtnPopover" placement="bottom" trigger="click">
-              <el-button v-for="item in tagBtnList" :key="item.id" size="small" :type="item.type" plain @click.native="chooseTag(item)">{{item.name}}</el-button>
-              <el-button size="small" slot="reference" :type="tagBtn.type" plain>{{tagBtn.name}}</el-button>
+              <el-button v-for="item in taskTag" :key="item.dictValue" size="small" :type="item.listClass" plain @click.native="chooseTag(item)">{{item.dictLabel}}</el-button>
+              <el-button size="small" slot="reference" :type="tagBtn.listClass" plain>{{tagBtn.dictLabel}}</el-button>
             </el-popover>
           </el-form-item>
           <el-form-item label="任务人员">
-            <el-tooltip v-for="item in userIfo" :key="item.id" effect="my-style" :content="item.name" placement="top">
-              <el-popover placement="bottom-start" :title="item.name" width="200" trigger="click">
-                <span>联系方式：{{ item.phone }}</span>
-                <div style="text-align: right; margin: 0">
-                  <el-button type="danger" @click="removeUser(item)">移除</el-button>
-                </div>
+            <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.name" width="200" trigger="click">
+              <span>联系方式：{{ item.phonenumber }}</span>
+              <div style="text-align: right; margin: 0">
+                <el-button type="danger" @click="removeUser(item)">移除</el-button>
+              </div>
 <!--                <el-avatar slot="reference" style="margin: 0 5px -15px 0">{{item.name}}</el-avatar>-->
-                <el-avatar slot="reference" style="margin: 0 5px -15px 0" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-              </el-popover>
-            </el-tooltip>
+              <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar"/>
+            </el-popover>
             <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
-              <el-card v-for="item in userIfo" :key="item.id" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
-                <el-avatar style="margin-bottom: -5px" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-                <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.name }}</span>
+              <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
+                <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
+                <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
               </el-card>
               <el-button slot="reference" icon="el-icon-plus" circle />
             </el-popover>
@@ -76,208 +72,182 @@
 </template>
 
 <script>
-  export default {
-    props: {
-      loading: {
-        type: Boolean
-      },
-      projectList: {
-        type: Array,
-        default () {
-          return []
-        }
-      },
-      activities: {
-        type: Array,
-        default () {
-          return [
-            {
-              content: '活动按期开始',
-              name: '张三',
-              type: 'success',
-              timestamp: '2018-04-15'
-            }, {
-              content: '通过审核',
-              name: '张三',
-              timestamp: '2018-04-13'
-            }, {
-              content: '创建成功',
-              name: '张三',
-              timestamp: '2018-04-11'
-            },
-            {
-              content: '活动按期开始',
-              name: '张三',
-              type: 'success',
-              timestamp: '2018-04-15'
-            }, {
-              content: '通过审核',
-              name: '张三',
-              timestamp: '2018-04-13'
-            }, {
-              content: '创建成功',
-              name: '张三',
-              timestamp: '2018-04-11'
-            }
-          ]
-        }
-      },
-      dialogVisible: {
-        type: Boolean,
-      },
-      tagBtn: {
-        type: Object,
-        default () {
-          return {
-            id: 2,
-            type: 'primary',
-            name: '普通任务'
-          }
-        }
-      },
-      dialogTitle: {
-        type: String,
-        default () {
-          return '编辑任务'
-        }
-      },
-      statusDropdown: {
-        type: Object,
-        default () {
-          return {
-            title: '待领取',
-            color: '#606266'
-          }
-        }
-      },
-      dialogForm: {
-        type: Object,
-        default () {
-          return {
-            projectName: '选择项目',
-            projectId: null,
-            taskName: null,
-            remark: null,
-            taskStatus: null
-          }
-        }
-      },
-      taskTime: {
-        type: Array
+import { listUser } from "@/api/system/user";
+export default {
+  props: {
+    loading: {
+      type: Boolean
+    },
+    projectList: {
+      type: Array,
+      default () {
+        return []
       }
     },
-    name: "taskDialog",
-    data() {
-      return {
-        tagBtnPopover: false,
-        tagBtnList: [
+    activities: {
+      type: Array,
+      default () {
+        return [
           {
-            id: 1,
+            content: '活动按期开始',
+            name: '张三',
             type: 'success',
-            name: '优化任务'
+            timestamp: '2018-04-15'
+          }, {
+            content: '通过审核',
+            name: '张三',
+            timestamp: '2018-04-13'
+          }, {
+            content: '创建成功',
+            name: '张三',
+            timestamp: '2018-04-11'
           },
           {
-            id: 2,
-            type: 'primary',
-            name: '普通任务'
-          },
-          {
-            id: 3,
-            type: 'warning',
-            name: '优先任务'
-          },
-          {
-            id: 4,
-            type: 'danger',
-            name: '紧急任务'
+            content: '活动按期开始',
+            name: '张三',
+            type: 'success',
+            timestamp: '2018-04-15'
+          }, {
+            content: '通过审核',
+            name: '张三',
+            timestamp: '2018-04-13'
+          }, {
+            content: '创建成功',
+            name: '张三',
+            timestamp: '2018-04-11'
           }
-        ],
-        pickerOptions: {
-          shortcuts: [{
-            text: '最近一周',
-            onClick(picker) {
-              const end = new Date()
-              const start = new Date()
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
-              picker.$emit('pick', [start, end])
-            }
-          }, {
-            text: '最近一个月',
-            onClick(picker) {
-              const end = new Date()
-              const start = new Date()
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
-              picker.$emit('pick', [start, end])
-            }
-          }, {
-            text: '最近三个月',
-            onClick(picker) {
-              const end = new Date()
-              const start = new Date()
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
-              picker.$emit('pick', [start, end])
-            }
-          }]
+        ]
+      }
+    },
+    dialogVisible: {
+      type: Boolean,
+    },
+    tagBtn: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    dialogTitle: {
+      type: String,
+      default () {
+        return '编辑任务'
+      }
+    },
+    statusDropdown: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    dialogForm: {
+      type: Object,
+      default () {
+        return {
+          projectName: '选择项目',
+          projectId: null,
+          taskName: null,
+          remark: null,
+          taskStatus: null
         }
       }
     },
-    methods: {
-      chooseTag(item) {
-        this.tagBtnPopover = false
-        this.tagBtn = item
-      },
-      submitForm(val) {
-        this.$emit('submitForm',this.dialogForm)
-      },
-      chooseProject(command) {
-        console.log(command)
-        this.dialogForm.projectName = command.label
-        this.dialogForm.projectId = command.value
-      },
-      chooseUser(item) {
-        this.userPopover = false
-        console.log(item)
-      },
-      handleCancel(){
-        this.$emit('handleCancel')
-      },
-      handleClose(done) {
-        this.$emit("handleClose")
-      },
-      submitForm() {
-        var val = this.dialogForm;
-        val.startTime = "";
-        val.stopTime = "";
-        if (null != this.taskTime && '' != this.taskTime) {
-          val.startTime = this.taskTime[0];
-          val.stopTime = this.taskTime[1];
-        }
-        this.$emit('submitForm', val)
-      },
-      statusCommand(val) {
-        switch (val) {
-          case 'ready':
-            this.statusDropdown = {
-              title: '待领取',
-              color: '#606266'
-            }
-            break
-          case 'working':
-            this.statusDropdown = {
-              title: '开发中',
-              color: '#409EFF'
-            }
-            break
-          case 'finish':
-            this.statusDropdown = {
-              title: '已完成',
-              color: '#67C23A'
-            }
-            break
-        }
+    taskTime: {
+      type: Array
+    }
+  },
+  name: "taskDialog",
+  data() {
+    return {
+      tagBtnPopover: false,
+      userPopover: false,
+      taskTag: [],
+      userList: [],
+      taskStatusList: [],
+      pickerOptions: {
+        shortcuts: [{
+          text: '最近一周',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+            picker.$emit('pick', [start, end])
+          }
+        }]
       }
     }
+  },
+  created() {
+    this.getUserList()
+    this.getDicts("task_status").then(response => {
+      console.log(response.data)
+      this.taskStatusList = response.data;
+    })
+    this.getDicts("task_tag").then(response => {
+      this.taskTag = response.data;
+    })
+  },
+  methods: {
+    getUserList() {
+      listUser().then(response => {
+        this.userList = response.rows;
+      })
+    },
+    chooseTag(item) {
+      this.tagBtnPopover = false
+      this.tagBtn = item
+    },
+    submitForm(val) {
+      this.$emit('submitForm',this.dialogForm)
+    },
+    chooseProject(command) {
+      console.log(command)
+      this.dialogForm.projectName = command.label
+      this.dialogForm.projectId = command.value
+    },
+    chooseUser(item) {
+      this.userPopover = false
+      console.log(item)
+    },
+    handleCancel(){
+      this.$emit('handleCancel')
+    },
+    handleClose(done) {
+      this.$emit("handleClose")
+    },
+    submitForm() {
+      var val = this.dialogForm;
+      val.startTime = "";
+      val.stopTime = "";
+      if (null != this.taskTime && '' != this.taskTime) {
+        val.startTime = this.taskTime[0];
+        val.stopTime = this.taskTime[1];
+      }
+      this.$emit('submitForm', val)
+    },
+    statusCommand(command) {
+      console.log(command)
+      this.statusDropdown.dictLabel = command.dictLabel
+      this.statusDropdown.dictValue = command.dictValue
+    }
   }
+}
 </script>
 
 <style scoped>

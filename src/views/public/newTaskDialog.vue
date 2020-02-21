@@ -5,7 +5,7 @@
         <el-dropdown @command="chooseProject">
           <span class="el-dropdown-link"><i class="el-icon-s-order" />{{ dialogForm.projectName }}<i class="el-icon-arrow-down el-icon--right" /></span>
           <el-dropdown-menu align="center">
-            <el-dropdown-item v-for="item in projectList" :key="item.id" :command="{value:item.id,label:item.value}"> {{ item.value }}</el-dropdown-item>
+            <el-dropdown-item v-for="item in projectList" :key="item.projectId" :command="{projectId:item.projectId,projectName:item.projectName}"> {{ item.projectName }}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </el-form-item>
@@ -13,30 +13,36 @@
         <el-input v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
       </el-form-item>
       <el-form-item label="任务时间">
-        <el-date-picker v-model="taskTime" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
+        <el-date-picker
+          v-model="taskTime"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          type="datetimerange"
+          :picker-options="pickerOptions"
+          range-separator="至"
+          start-placeholder="设置开始时间"
+          end-placeholder="设置结束时间"
+          align="left" />
       </el-form-item>
       <el-form-item label="任务标签">
         <el-popover v-model="tagBtnPopover" placement="bottom" trigger="click">
-          <el-button v-for="item in tagBtnList" :key="item.id" size="small" :type="item.type" plain @click.native="chooseTag(item)">{{item.name}}</el-button>
-          <el-button size="small" slot="reference" :type="tagBtn.type" plain>{{tagBtn.name}}</el-button>
+          <el-button v-for="item in taskTag" :key="item.dictValue" size="small" :type="item.listClass" plain @click.native="chooseTag(item)">{{item.dictLabel}}</el-button>
+          <el-button size="small" slot="reference" :type="tagBtn.listClass" plain>{{tagBtn.dictLabel}}</el-button>
         </el-popover>
       </el-form-item>
       <el-form-item label="任务人员">
-        <el-tooltip v-for="item in userIfo" :key="item.id" effect="my-style" :content="item.name" placement="top">
-          <el-popover placement="bottom-start" :title="item.name" width="200" trigger="click">
-            <span>联系方式：{{ item.phone }}</span>
-            <div style="text-align: right; margin: 0">
-              <el-button type="danger" @click="removeUser(item)">移除</el-button>
-            </div>
-            <el-avatar slot="reference" style="margin: 0 5px -15px 0" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-          </el-popover>
-        </el-tooltip>
+        <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
+          <span>联系方式：{{ item.phonenumber }}</span>
+          <div style="text-align: right; margin: 0">
+            <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
+          </div>
+          <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
+        </el-popover>
         <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
-          <el-card v-for="item in userIfo" :key="item.id" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
-            <el-avatar style="margin-bottom: -5px" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-            <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.name }}</span>
+          <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
+            <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
+            <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
           </el-card>
-          <el-button slot="reference" icon="el-icon-plus" circle />
+          <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
         </el-popover>
       </el-form-item>
       <el-form-item label="任务描述">
@@ -51,6 +57,7 @@
 </template>
 
 <script>
+import { listUser } from "@/api/system/user";
 export default {
   props: {
     loading: {
@@ -64,59 +71,25 @@ export default {
     },
     dialogVisible: {
       type: Boolean,
-    },
-    tagBtn: {
-      type: Object,
-      default () {
-        return {
-          id: 2,
-          type: 'primary',
-          name: '普通任务'
-        }
-      }
-    },
-    dialogForm: {
-      type: Object,
-      default () {
-        return {
-          projectId: null,
-          projectName: '选择项目',
-          taskName: null,
-          remark: null
-        }
-      }
-    },
-    taskTime: {
-      type: Array
     }
   },
   name: "taskDialog",
   data() {
     return {
+      tagBtn: {},
+      userList: [],
+      taskTag: [],
+      taskTime: [],
+      dialogForm: {
+        projectId: null,
+        projectName: '选择项目',
+        taskName: null,
+        userList: [],
+        remark: null
+      },
       projectName: '选择项目',
+      userPopover: false,
       tagBtnPopover: false,
-      tagBtnList: [
-        {
-          id: 1,
-          type: 'success',
-          name: '优化任务'
-        },
-        {
-          id: 2,
-          type: 'primary',
-          name: '普通任务'
-        },
-        {
-          id: 3,
-          type: 'warning',
-          name: '优先任务'
-        },
-        {
-          id: 4,
-          type: 'danger',
-          name: '紧急任务'
-        }
-      ],
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -146,7 +119,32 @@ export default {
       }
     }
   },
+  created() {
+    this.getUserList()
+    this.getDicts("task_tag").then(response => {
+      this.taskTag = response.data;
+      this.tagBtn = this.taskTag.find(v => v.isDefault === 'Y')
+    });
+  },
+  watch: {
+    dialogVisible(val) {
+      if(val === true) {
+        this.dialogForm = {
+          projectId: null,
+          projectName: '选择项目',
+          taskName: null,
+          userList: [],
+          remark: null
+        }
+      }
+    }
+  },
   methods: {
+    getUserList() {
+      listUser().then(response => {
+        this.userList = response.rows;
+      })
+    },
     chooseTag(item) {
       this.tagBtnPopover = false
       this.tagBtn = item
@@ -156,12 +154,23 @@ export default {
     },
     chooseProject(command) {
       console.log(command)
-      this.dialogForm.projectName = command.label
+      this.dialogForm.projectName = command.projectName
       this.dialogForm.projectId = command.value
     },
     chooseUser(item) {
       this.userPopover = false
-      console.log(item)
+      if(this.dialogForm.userList.filter(t => t.userId == item.userId).length > 0) {
+        this.$notify({
+          title: '添加失败',
+          message: '不允许重复添加同一人员',
+          type: 'danger'
+        })
+      } else {
+        this.dialogForm.userList.push(item)
+      }
+    },
+    removeUser(item) {
+      this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
     },
     handleCancel(){
       this.$emit('handleCancel')
@@ -190,5 +199,10 @@ export default {
 }
 .el-icon-arrow-down {
   font-size: 12px;
+}
+/deep/ .el-tooltip__popper is-my-style {
+  background: #303133;
+  color: #FFF;
+  margin-bottom: 24px;
 }
 </style>

@@ -2,13 +2,23 @@
   <div class="app-container">
     <span class="my-title-font">我创建的·{{ taskNum }}</span>
     <div style="float: right;">
-      <sort-task @statusCommand="statusCommand" @sortCommand="sortCommand"></sort-task>
-      <el-button type="primary" size="small"  @click="newTaskDialog = true">新建</el-button>
+      <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
+      <el-button type="primary" size="small"  @click="newTaskWindow">新建</el-button>
     </div>
     <br><br>
     <task-card-list :taskList="taskList" @showTask="showTask"></task-card-list>
-    <new-task-dialog :projectList="allPojectList" :dialogVisible.sync="newTaskDialog" @handleCancel="newTaskDialog = false" @handleClose="handleClose" @submitForm="submitForm"></new-task-dialog>
-    <edit-task-dialog :dialogVisible.sync="editTaskDialog" @handleCancel="editTaskDialog = false" @handleClose="handleEditClose" @submitForm="submitEditForm"></edit-task-dialog>
+    <new-task-dialog
+      :loading="addTaskLoading"
+      :projectList="pojectList"
+      :dialogVisible.sync="newTaskDialog"
+      @handleCancel="newTaskDialog = false"
+      @handleClose="handleClose"
+      @submitForm="submitForm"/>
+    <edit-task-dialog
+      :dialogVisible.sync="editTaskDialog"
+      @handleCancel="editTaskDialog = false"
+      @handleClose="handleEditClose"
+      @submitForm="submitEditForm"/>
   </div>
 </template>
 
@@ -17,7 +27,8 @@ import newTaskDialog from '@/views/public/newTaskDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
-import { addTask, listTask } from "@/api/task";
+import { addTask, listTask } from "@/api/task"
+import { listProject } from "@/api/project";
 let mainLoading
 export default {
   name: 'index',
@@ -30,11 +41,13 @@ export default {
   data() {
     return {
       taskNum: 0,
+      addTaskLoading: false,
       newTaskDialog: false,
       editTaskDialog: false,
       taskData: {
         projectId: null,
         taskName: null,
+        users: [],
         taskDate: null,
         remark: null
       },
@@ -56,27 +69,36 @@ export default {
           taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
         }
       ],
-      allPojectList: [
-        {
-          id: 1,
-          value: '测试项目1'
-        },
-        {
-          id: 2,
-          value: '测试项目2'
-        },
-        {
-          id: 3,
-          value: '测试项目3'
-        }
-      ]
+      pojectList: [],
+      taskSort1: [],
+      taskSort2: []
     }
+  },
+  created() {
+    this.getList()
+    this.getDicts("task_sort_status").then(response => {
+      this.taskSort1 = response.data;
+    });
+    this.getDicts("task_sort_time").then(response => {
+      this.taskSort2 = response.data;
+    });
   },
   methods: {
     getList() {
       listTask().then(response => {
         console.log(response)
       })
+    },
+    getProjectList() {
+      listProject().then(response => {
+        this.pojectList = response.rows
+        console.log(response)
+      })
+    },
+    newTaskWindow() {
+      this.newTaskDialog = true
+      this.getProjectList()
+      this.getUserList()
     },
     showTask(val) {
       console.log(this.editTaskDialog)
@@ -93,14 +115,19 @@ export default {
         .catch(_ => {})
     },
     submitForm(val) {
+      this.addTaskLoading = true
       addTask(val).then(response => {
+        this.addTaskLoading = true
         if (response.code === 200) {
           this.msgSuccess("新增成功");
-          // this.open = false;
+          this.newTaskDialog = false
         } else {
+          this.addTaskLoading = false
           this.msgError(response.msg);
         }
-      });
+      }).catch(
+        this.addTaskLoading = false
+      )
     },
     handleEditClose(done) {
       this.$confirm('确认关闭？')
@@ -113,10 +140,10 @@ export default {
     submitEditForm(val) {
       console.log(val)
     },
-    statusCommand(val) {
+    sort1Command(val) {
       console.log(val)
     },
-    sortCommand(val) {
+    sort2Command(val) {
       console.log(val)
     },
     startLoading() {
@@ -132,6 +159,7 @@ export default {
   },
   mounted() {
     this.startLoading()
+    this.endLoading()
   }
 }
 </script>

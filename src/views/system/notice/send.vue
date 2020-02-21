@@ -68,7 +68,7 @@
 <script>
 import deptTree from '@/views/public/deptTree'
 export default {
-  name: 'SendNotice',
+  name: 'Send',
   components: { deptTree },
   data() {
     return {

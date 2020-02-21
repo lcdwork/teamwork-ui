@@ -2,11 +2,18 @@
   <div class="app-container">
     <span class="my-title-font">项目管理·{{projectList.length}}</span>
     <div style="float: right;">
-      <sort-task @statusCommand="statusCommand" @sortCommand="sortCommand"></sort-task>
-      <el-button type="primary" size="small" style="margin-right: 20px" @click="newProjectDialog = true">新建</el-button>
+      <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
+      <el-button type="primary" size="small" style="margin-right: 20px" @click="newProjectWindow">新建</el-button>
     </div>
     <br><br>
-    <new-project-dialog :loading="addLoading" :dialogVisible.sync="newProjectDialog" @handleCancel="newProjectDialog = false" @handleClose="handleClose" @submitForm="submitForm"></new-project-dialog>
+    <new-project-dialog
+      :dialogDate="projectDate"
+      :dialogForm="projectForm"
+      :loading="addLoading"
+      :dialogVisible.sync="newProjectDialog"
+      @handleCancel="newProjectDialog = false"
+      @handleClose="handleClose"
+      @submitForm="submitForm"/>
     <el-col v-for="item in projectList" :key="item.id" style="width: 300px;margin-top: 20px">
       <el-card class="box-card" style="margin-left: 20px; height: 180px">
         <div slot="header" class="clearfix">
@@ -32,36 +39,52 @@ export default {
   },
   data() {
     return {
+      projectDate: [],
+      projectForm: {},
       addLoading: false,
       newProjectDialog: false,
       projectList: [],
+      taskSort1: [],
+      taskSort2: []
     }
+  },
+  created() {
+    this.getList()
+    this.getDicts("project_sort_status").then(response => {
+      this.taskSort1 = response.data;
+    });
+    this.getDicts("project_sort_time").then(response => {
+      this.taskSort2 = response.data;
+    });
   },
   methods: {
     getList() {
       this.startLoading()
       listProject().then(response => {
         this.endLoading()
-        console.log(response)
         this.projectList = response.rows
       }).catch(
         this.endLoading()
       )
     },
-    statusCommand(val) {
+    newProjectWindow() {
+      this.projectDate = []
+      this.projectForm = {}
+      this.newProjectDialog = true
+    },
+    sort1Command(val) {
       console.log(val)
     },
-    sortCommand(val) {
+    sort2Command(val) {
       console.log(val)
     },
     submitForm(val) {
       this.addLoading = true
       addProject(val).then(response => {
-        this.newProjectDialog = false
         this.addLoading = false
         if (response.code === 200) {
           this.msgSuccess("新增成功");
-          // this.open = false;
+          this.newProjectDialog = false
         } else {
           this.msgError(response.msg);
         }
@@ -91,9 +114,6 @@ export default {
         })
         .catch(_ => {})
     },
-  },
-  mounted() {
-    this.getList()
   }
 }
 </script>

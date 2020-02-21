@@ -15,8 +15,8 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="handleCancel">取 消</el-button>
-      <el-button type="danger" @click="submitForm">删 除</el-button>
+      <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
+      <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -24,6 +24,9 @@
 <script>
 export default {
   props: {
+    loading: {
+      type: Boolean
+    },
     dialogForm: {
       type: Object,
       default () {

@@ -1,15 +1,15 @@
 <template>
   <span>
-    <el-dropdown @command="chooseTaskStatus">
-      <span class="my-mouse-link">{{ taskStatus.value }}<i class="el-icon-arrow-down el-icon--right"/></span>
+    <el-dropdown @command="sort1Command">
+      <span class="my-mouse-link">{{ sort1Dropdown.dictLabel }}<i class="el-icon-arrow-down el-icon--right"/></span>
       <el-dropdown-menu align="center">
-        <el-dropdown-item v-for="item in taskStatusList" :key="item.id" :command="{id:item.id,value:item.value}"> {{ item.value }}</el-dropdown-item>
+        <el-dropdown-item v-for="item in sort1List" :key="item.dictValue" :command="{dictValue:item.dictValue, dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
-    <el-dropdown @command="chooseTaskSort">
-      <span class="my-mouse-link">{{ taskSort.value }}<i class="el-icon-arrow-down el-icon--right"/></span>
+    <el-dropdown @command="sort2Command">
+      <span class="my-mouse-link">{{ sort2Dropdown.dictLabel }}<i class="el-icon-arrow-down el-icon--right"/></span>
       <el-dropdown-menu align="center">
-        <el-dropdown-item v-for="item in taskSortList" :key="item.id" :command="{id:item.id,value:item.value}"> {{ item.value }}</el-dropdown-item>
+        <el-dropdown-item v-for="item in sort2List" :key="item.dictValue" :command="{dictValue:item.dictValue, dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
   </span>
@@ -20,7 +20,7 @@
 export default {
   name: "sortTask",
   props: {
-    taskStatusList: {
+    sort1List: {
       type: Array,
       default () {
         return [
@@ -39,7 +39,7 @@ export default {
         ]
       }
     },
-    taskSortList: {
+    sort2List: {
       type: Array,
       default () {
         return [
@@ -61,24 +61,26 @@ export default {
   },
   data() {
     return {
-      taskStatus: {
-        id: 1,
-        value: '未完成'
-      },
-      taskSort: {
-        id: 1,
-        value: '按截至时间'
-      }
+      sort1Dropdown: {},
+      sort2Dropdown: {}
+    }
+  },
+  watch: {
+    sort1List() {
+      this.sort1Dropdown = this.sort1List.find(v => v.isDefault === 'Y')
+    },
+    sort2List() {
+      this.sort2Dropdown = this.sort2List.find(v => v.isDefault === 'Y')
     }
   },
   methods: {
-    chooseTaskStatus(command) {
-      this.$emit('statusCommand',command)
-      this.taskStatus = command
+    sort1Command(command) {
+      this.$emit('sort1Command',command)
+      this.sort1Dropdown = command
     },
-    chooseTaskSort(command) {
-      this.$emit('sortCommand',command)
-      this.taskSort = command
+    sort2Command(command) {
+      this.$emit('sort2Command',command)
+      this.sort2Dropdown = command
     }
   }
 }
