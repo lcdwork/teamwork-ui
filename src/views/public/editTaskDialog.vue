@@ -66,12 +66,11 @@
             </el-timeline-item>
           </el-timeline>
         </div>
-
       </el-main>
     </el-container>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="handleCancel">取 消</el-button>
-      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
+      <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -79,6 +78,9 @@
 <script>
   export default {
     props: {
+      loading: {
+        type: Boolean
+      },
       projectList: {
         type: Array,
         default () {

@@ -13,16 +13,6 @@
           <el-dropdown-item style="color: #F56C6C" command="del" divided> 删除项目</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-      <!--      <el-popover-->
-      <!--        placement="bottom"-->
-      <!--        width="160"-->
-      <!--        v-model="delProject">-->
-      <!--        <p>确定删除项目？操作不可逆！</p>-->
-      <!--        <div style="text-align: right; margin: 0">-->
-      <!--          <el-button type="danger" size="mini" @click="delProjectFun">确定</el-button>-->
-      <!--        </div>-->
-      <!--        <el-link slot="reference" type="danger" :underline="false" style="margin-right: 10px; font-size: 14px">删除项目</el-link>-->
-      <!--      </el-popover>-->
     </div>
     <br><br>
     <task-card-list :taskList="taskList" @showTask="showTask">
@@ -42,7 +32,7 @@
         <el-button type="danger" @click="submitProjectDelForm" :loading="delLoading">{{ delLoading ? '提交中 ...' : '删 除' }}</el-button>
       </span>
     </el-dialog>
-    <new-project-dialog :dialogDate="editProjectDate" :dialogForm="editProjectInfo" dialogTitle="编辑项目" :dialogVisible.sync="editProjectDialog" @handleCancel="editProjectDialog = false" @handleClose="handleEditProjectClose" @submitForm="submitEditProjectForm"></new-project-dialog>
+    <new-project-dialog :loading="editLoading" :dialogDate="editProjectDate" :dialogForm="editProjectInfo" dialogTitle="编辑项目" :dialogVisible.sync="editProjectDialog" @handleCancel="editProjectDialog = false" @handleClose="handleEditProjectClose" @submitForm="submitEditProjectForm"></new-project-dialog>
     <notify-drawer drawerTitle="操作历史" :drawerVisible="historyDrawer" @handleClose="handleHistoryClose">
       <el-timeline class="demo-drawer__timeline" :style="{'height': drawerHeight + 'px'}">
         <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
@@ -82,6 +72,7 @@ export default {
   data() {
     return {
       delLoading: false,
+      editLoading: false,
       currentPage: 10,
       drawerHeight: null,
       historyDrawer: false,
@@ -240,14 +231,19 @@ export default {
         .catch(_ => {})
     },
     submitEditProjectForm(val) {
+      this.editLoading = true
       updateProject(val).then(response => {
+        this.editProjectDialog = false
+        this.editLoading = false
         if (response.code === 200) {
           this.msgSuccess("修改成功");
           // this.open = false;
         } else {
           this.msgError(response.msg);
         }
-      });
+      }).catch(
+        this.editLoading = false
+      )
     },
     statusCommand(val) {
       console.log(val)
@@ -288,18 +284,20 @@ export default {
       delProject(this.projectInfo.projectId).then(response => {
         this.delLoading = false
         if (response.code === 200) {
-          this.$notify({
-            title: '删除成功',
-            message: '项目已被删除',
-            type: 'success'
-          })
+          // this.$notify({
+          //   title: '删除成功',
+          //   message: '项目已被删除',
+          //   type: 'success'
+          // })
+          this.msgSuccess("删除成功");
           this.$router.push('/project/list')
         } else {
-          this.$notify({
-            title: '删除失败',
-            message: response.msg,
-            type: 'danger'
-          })
+          // this.$notify({
+          //   title: '删除失败',
+          //   message: response.msg,
+          //   type: 'danger'
+          // })
+          this.msgError("删除失败");
         }
       }).catch(
         this.delLoading = false

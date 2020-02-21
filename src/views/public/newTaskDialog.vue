@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-loading="loading" title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
+  <el-dialog title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
     <el-form ref="form" :model="dialogForm" label-width="80px">
       <el-form-item label="所属项目">
         <el-dropdown @command="chooseProject">
@@ -44,8 +44,8 @@
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
-      <el-button @click="handleCancel">取 消</el-button>
-      <el-button type="primary" @click="submitForm">确 定</el-button>
+      <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
+      <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -54,10 +54,7 @@
 export default {
   props: {
     loading: {
-      type: Boolean,
-      default () {
-        return true
-      }
+      type: Boolean
     },
     projectList: {
       type: Array,
@@ -187,11 +184,11 @@ export default {
 </script>
 
 <style scoped>
-  .el-dropdown-link {
-    cursor: pointer;
-    color: #409EFF;
-  }
-  .el-icon-arrow-down {
-    font-size: 12px;
-  }
+.el-dropdown-link {
+  cursor: pointer;
+  color: #409EFF;
+}
+.el-icon-arrow-down {
+  font-size: 12px;
+}
 </style>
