@@ -41,7 +41,6 @@
 <!--    新建任务-->
     <new-task-dialog
       :loading="addTaskLoading"
-      :projectList="projectList"
       :dialogVisible.sync="newTaskDialog"
       @handleCancel="newTaskDialog = false"
       @handleClose="handleNewTaskClose"
@@ -65,11 +64,10 @@
 </template>
 
 <script>
-let mainLoading
 import newTaskDialog from '@/views/public/newTaskDialog'
 import newProjectDialog from '@/views/public/newProjectDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
-import { addProject, listProject } from "@/api/project";
+import { addProject } from "@/api/project";
 import { addTask, listTask, updateTask } from "@/api/task"
 export default {
   name: 'Dashboard',
@@ -92,22 +90,20 @@ export default {
     }
   },
   created() {
-    this.getList()
+    this.getTaskList()
   },
   methods: {
-    getList() {
-      listProject().then(response => {
-        this.projectList = response.rows
-      }).catch(
-      )
-    },
     getTaskList() {
       listTask().then(response => {
+        console.log(response.rows)
         this.taskList = response.rows
       }).catch(
       )
     },
     showTask(item) {
+      var date = [item.startTime, item.stopTime]
+      delete item.startDate, item.endDate
+      item.dialogDate = date
       this.taskInfo = item
       this.editTaskDialog = true
     },
@@ -169,7 +165,7 @@ export default {
       updateTask(val).then(response => {
         this.editTaskLoading = true
         if (response.code === 200) {
-          this.msgSuccess("新增成功");
+          this.msgSuccess("编辑成功");
           this.editTaskDialog = false
         } else {
           this.editTaskLoading = false

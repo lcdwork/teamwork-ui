@@ -3,13 +3,13 @@
     <el-dropdown @command="sort1Command">
       <span class="my-mouse-link">{{ sort1Dropdown.dictLabel }}<i class="el-icon-arrow-down el-icon--right"/></span>
       <el-dropdown-menu align="center">
-        <el-dropdown-item v-for="item in sort1List" :key="item.dictValue" :command="{dictValue:item.dictValue, dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
+        <el-dropdown-item v-for="item in sort1List" :key="item.dictKey" :command="{dictKey:item.dictKey, dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
     <el-dropdown @command="sort2Command">
       <span class="my-mouse-link">{{ sort2Dropdown.dictLabel }}<i class="el-icon-arrow-down el-icon--right"/></span>
       <el-dropdown-menu align="center">
-        <el-dropdown-item v-for="item in sort2List" :key="item.dictValue" :command="{dictValue:item.dictValue, dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
+        <el-dropdown-item v-for="item in sort2List" :key="item.dictKey" :command="{dictKey:item.dictKey, dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
   </span>

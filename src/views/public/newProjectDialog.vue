@@ -137,7 +137,7 @@ export default {
     },
     chooseUser(item) {
       this.userPopover = false
-      if(this.dialogForm.userList === undefined) {
+      if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
         this.dialogForm.userList = []
       }
       if(this.dialogForm.userList.filter(t => t.userId == item.userId).length > 0) {

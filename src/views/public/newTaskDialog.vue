@@ -26,7 +26,7 @@
       </el-form-item>
       <el-form-item label="任务标签">
         <el-popover v-model="tagBtnPopover" placement="bottom" trigger="click">
-          <el-button v-for="item in taskTag" :key="item.dictValue" size="small" :type="item.listClass" plain @click.native="chooseTag(item)">{{item.dictLabel}}</el-button>
+          <el-button v-for="item in taskTag" :key="item.dictKey" size="small" :type="item.listClass" plain @click.native="chooseTag(item)">{{item.dictLabel}}</el-button>
           <el-button size="small" slot="reference" :type="tagBtn.listClass" plain>{{tagBtn.dictLabel}}</el-button>
         </el-popover>
       </el-form-item>
@@ -59,16 +59,11 @@
 
 <script>
 import { listUser } from "@/api/system/user";
+import { listProject } from "@/api/project";
 export default {
   props: {
     loading: {
       type: Boolean
-    },
-    projectList: {
-      type: Array,
-      default () {
-        return []
-      }
     },
     dialogVisible: {
       type: Boolean,
@@ -77,16 +72,21 @@ export default {
   name: "taskDialog",
   data() {
     return {
+      defaultTaskTag: null,
+      defaultStatus: null,
       tagBtn: {},
       userList: [],
       taskTag: [],
       taskTime: [],
+      projectList: [],
+      taskStatusList: [],
       dialogForm: {
         projectId: null,
-        projectName: null,
         taskName: null,
+        taskTag: this.defaultTaskTag,
         userList: [],
-        remark: null
+        remark: null,
+        status: this.defaultStatus
       },
       userPopover: false,
       tagBtnPopover: false,
@@ -120,32 +120,45 @@ export default {
     }
   },
   created() {
+    this.getList()
     this.getUserList()
     this.getDicts("task_tag").then(response => {
       this.taskTag = response.data;
       this.tagBtn = this.taskTag.find(v => v.isDefault === 'Y')
+      this.defaultTaskTag = this.tagBtn.dictKey
     });
+    this.getDicts("task_status").then(response => {
+      this.taskStatusList = response.data;
+      this.defaultStatus = this.taskStatusList.find(v => v.isDefault === 'Y')
+    })
   },
   watch: {
     dialogVisible(val) {
       if(val === true) {
         this.dialogForm = {
           projectId: null,
-          projectName: null,
           taskName: null,
           userList: [],
-          remark: null
+          taskTag: this.defaultTaskTag,
+          remark: null,
+          status: this.defaultStatus,
         }
       }
     }
   },
   methods: {
+    getList() {
+      listProject().then(response => {
+        this.projectList = response.rows
+      })
+    },
     getUserList() {
       listUser().then(response => {
         this.userList = response.rows;
       })
     },
     chooseTag(item) {
+      this.dialogForm.taskTag = item.dictKey
       this.tagBtnPopover = false
       this.tagBtn = item
     },

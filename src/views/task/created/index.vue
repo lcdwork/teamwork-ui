@@ -77,13 +77,15 @@ export default {
     getProjectList() {
       listProject().then(response => {
         this.pojectList = response.rows
-        console.log(response)
       })
     },
     newTaskWindow() {
       this.newTaskDialog = true
     },
-    showTask(val) {
+    showTask(item) {
+      var date = [item.startTime, item.stopTime]
+      delete item.startDate, item.endDate
+      item.dialogDate = date
       this.taskInfo = item
       this.editTaskDialog = true
     },
@@ -123,7 +125,7 @@ export default {
       updateTask(val).then(response => {
         this.editTaskLoading = true
         if (response.code === 200) {
-          this.msgSuccess("新增成功");
+          this.msgSuccess("编辑成功");
           this.editTaskDialog = false
         } else {
           this.editTaskLoading = false

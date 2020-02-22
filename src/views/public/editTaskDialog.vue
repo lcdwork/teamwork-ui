@@ -13,16 +13,16 @@
             <el-dropdown trigger="click" @command="statusCommand">
               <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
               <el-dropdown-menu align="center">
-                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictValue" :style="{'color': item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
+                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictKey" :style="{'color': item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
           <el-form-item label="任务时间">
-            <el-date-picker v-model="taskTime" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
+            <el-date-picker v-model="dialogDate" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
           </el-form-item>
           <el-form-item label="任务标签">
             <el-popover v-model="tagBtnPopover" placement="bottom" trigger="click">
-              <el-button v-for="item in taskTag" :key="item.dictValue" size="small" :type="item.listClass" plain @click.native="chooseTag(item)">{{item.dictLabel}}</el-button>
+              <el-button v-for="item in taskTagList" :key="item.dictKey" size="small" :type="item.listClass" plain @click.native="chooseTag(item)">{{item.dictLabel}}</el-button>
               <el-button size="small" slot="reference" :type="tagBtn.listClass" plain>{{tagBtn.dictLabel}}</el-button>
             </el-popover>
           </el-form-item>
@@ -75,7 +75,10 @@ import { listUser } from "@/api/system/user";
 export default {
   props: {
     loading: {
-      type: Boolean
+      type: Boolean,
+      default () {
+        return false
+      }
     },
     projectList: {
       type: Array,
@@ -120,11 +123,8 @@ export default {
     },
     dialogVisible: {
       type: Boolean,
-    },
-    tagBtn: {
-      type: Object,
       default () {
-        return {}
+        return false
       }
     },
     dialogTitle: {
@@ -144,17 +144,16 @@ export default {
           taskStatus: null
         }
       }
-    },
-    taskTime: {
-      type: Array
     }
   },
   name: "taskDialog",
   data() {
     return {
+      tagBtn: {},
+      dialogDate: [],
       tagBtnPopover: false,
       userPopover: false,
-      taskTag: [],
+      taskTagList: [],
       userList: [],
       taskStatusList: [],
       statusDropdown: {},
@@ -193,14 +192,25 @@ export default {
       this.taskStatusList = response.data;
     })
     this.getDicts("task_tag").then(response => {
-      this.taskTag = response.data;
+      this.taskTagList = response.data;
     })
   },
   watch: {
     dialogForm(val) {
-      this.statusDropdown = this.taskStatusList.find(v => v.dictVaule === val.status)
-      console.log(this.statusDropdown)
-      this.tagBtn = this.taskTag.find(v => v.dictVaule === val.taskTag)
+      this.dialogDate = val.dialogDate
+      this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
+      this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
+
+      // if(val.status === undefined || val.status === null) {
+      //   this.statusDropdown = this.taskStatusList.find(v => v.isDefault === 'Y')
+      // } else {
+      //   this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
+      // }
+      // if(val.taskTag === undefined || val.taskTag === null) {
+      //   this.tagBtn = this.taskTagList.find(v => v.isDefault === 'Y')
+      // } else {
+      //   this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
+      // }
     }
   },
   methods: {
@@ -210,6 +220,7 @@ export default {
       })
     },
     chooseTag(item) {
+      this.dialogForm.taskTag = item.dictKey
       this.tagBtnPopover = false
       this.tagBtn = item
     },
@@ -221,7 +232,7 @@ export default {
       this.dialogForm.projectId = command.value
     },
     chooseUser(item) {
-      if(this.dialogForm.userList === undefined) {
+      if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
         this.dialogForm.userList = []
       }
       this.userPopover = false
@@ -249,16 +260,17 @@ export default {
     },
     submitForm() {
       var val = this.dialogForm;
-      val.startTime = "";
-      val.stopTime = "";
-      if (null != this.taskTime && '' != this.taskTime) {
-        val.startTime = this.taskTime[0];
-        val.stopTime = this.taskTime[1];
+      val.startTime = null;
+      val.stopTime = null;
+      if (null != this.dialogDate && '' != this.dialogDate) {
+        val.startTime = this.dialogDate[0];
+        val.stopTime = this.dialogDate[1];
       }
       this.$emit('submitForm', val)
     },
     statusCommand(command) {
       this.statusDropdown = command
+      this.dialogForm.status = command.dictKey
     }
   }
 }

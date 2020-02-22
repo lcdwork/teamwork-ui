@@ -8,7 +8,7 @@
         <el-input disabled="disabled" v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
       </el-form-item>
       <el-form-item label="任务状态">
-        <span>{{ dialogForm.taskStatus }}</span>
+        <span :style="{'color': statusSpan.cssClass}" class="status-dropdown">{{statusSpan.dictLabel}}</span>
       </el-form-item>
       <el-form-item label="任务时间">
         <el-date-picker disabled="disabled" v-model="dialogForm.taskDate" type="datetimerange" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
@@ -25,7 +25,10 @@
 export default {
   props: {
     loading: {
-      type: Boolean
+      type: Boolean,
+      default() {
+        return false;
+      }
     },
     dialogForm: {
       type: Object,
@@ -42,12 +45,31 @@ export default {
     },
     dialogVisible: {
       type: Boolean,
+      default() {
+        return false;
+      }
     }
   },
   name: "delTaskDialog",
+  data() {
+    return {
+      taskStatusList: [],
+      statusSpan: null,
+    }
+  },
+  created() {
+    this.getDicts("task_status").then(response => {
+      this.taskStatusList = response.data;
+    })
+  },
+  watch: {
+    dialogForm(val) {
+      this.statusSpan = this.taskStatusList.find(v => v.dictKey === val.status)
+    }
+  },
   methods: {
     submitForm(val) {
-      this.$emit('submitForm',this.dialogForm)
+      this.$emit('submitForm', val)
     },
     handleCancel(){
       this.$emit('handleCancel')
@@ -60,7 +82,12 @@ export default {
 </script>
 
 <style scoped>
-  .el-icon-arrow-down {
-    font-size: 12px;
-  }
+.el-icon-arrow-down {
+  font-size: 12px;
+}
+.status-dropdown {
+  background: rgba(0, 0, 0, .025);
+  border-radius: 5px;
+  padding: 8px;
+}
 </style>

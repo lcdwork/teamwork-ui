@@ -41,6 +41,7 @@
 <!--    删除任务-->
     <del-task-dialog
       :loading="delTaskLoading"
+      :dialogForm="taskInfo"
       :dialogVisible.sync="delTaskDialog"
       @handleCancel="delTaskDialog = false"
       @handleClose="handleDelTaskClose"
@@ -84,7 +85,7 @@ import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { updateProject, delProject } from "@/api/project";
-import { addTask, delTask, listTask } from "@/api/task"
+import { addTask, delTask, listTask, updateTask } from "@/api/task"
 import { listProject } from "@/api/project";
 let mainLoading
 export default {
@@ -177,12 +178,15 @@ export default {
     handleCurrentChange(val) {
       console.log(`当前页: ${val}`)
     },
-    showTask(val) {
-      this.taskInfo = val
+    showTask(item) {
+      var date = [item.startTime, item.stopTime]
+      delete item.startDate, item.endDate
+      item.dialogDate = date
+      this.taskInfo = item
       this.editTaskDialog = true
     },
     delTaskFun(item) {
-      console.log(item)
+      this.taskInfo = item
       this.delTaskDialog = true
     },
     goBack() {
@@ -248,7 +252,19 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
-
+      this.editTaskLoading = true
+      updateTask(val).then(response => {
+        this.editTaskLoading = true
+        if (response.code === 200) {
+          this.msgSuccess("编辑成功");
+          this.editTaskDialog = false
+        } else {
+          this.editTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.editTaskLoading = false
+      )
     },
     handleDelTaskClose(done) {
       this.$confirm('确认关闭？')
