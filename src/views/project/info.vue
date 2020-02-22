@@ -276,7 +276,7 @@ export default {
     },
     submitDelTaskForm(val) {
       this.delTaskLoading = true
-      delTask(val).then(response => {
+      delTask(val.taskId).then(response => {
         this.delTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("删除成功");

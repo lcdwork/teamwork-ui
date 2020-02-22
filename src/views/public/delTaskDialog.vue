@@ -69,7 +69,7 @@ export default {
   },
   methods: {
     submitForm(val) {
-      this.$emit('submitForm', val)
+      this.$emit('submitForm', this.dialogForm)
     },
     handleCancel(){
       this.$emit('handleCancel')

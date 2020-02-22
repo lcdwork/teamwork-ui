@@ -3,6 +3,8 @@ import { Notification, MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
+// axios.defaults.withCredentials = true;//跨域
+// axios.defaults.baseURL = 'http://localhost/';
 axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 // 创建axios实例
 const service = axios.create({

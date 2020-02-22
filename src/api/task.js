@@ -37,7 +37,7 @@ export function updateTask(data) {
 }
 
 // 删除任务
-export function delUser(userId) {
+export function delTask(userId) {
   return request({
     url: '/task/' + userId,
     method: 'delete'
