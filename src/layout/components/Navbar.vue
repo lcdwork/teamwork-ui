@@ -8,7 +8,7 @@
       popper-class="my-autocomplete"
       v-model="state"
       :fetch-suggestions="querySearchAsync"
-      placeholder="请输入内容"
+      placeholder="请输入任务名称"
       @select="handleSelect">
       <template slot-scope="{ item }">
         <span class="name">{{ item.value }}</span><br>
@@ -56,7 +56,7 @@
 <!--          <el-dropdown-item>-->
 <!--            <span @click="setting = true">布局设置</span>-->
 <!--          </el-dropdown-item>-->
-          <el-dropdown-item divided>
+          <el-dropdown-item divided style="color: #F56C6C">
             <span @click="logout">退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -270,16 +270,6 @@ export default {
         { "value": "Hot honey 首尔炸鸡（仙霞路）", "address": "上海市长宁区淞虹路661号" },
         { "value": "新旺角茶餐厅", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" }
       ]
-    },
-    newCommand(val) {
-      switch (val) {
-        case 'project':
-          // this.newTaskFun()
-          break
-        case 'del':
-          // this.delProjectDialog = true
-          break
-      }
     },
     handleNotifyClose() {
       this.notifyDrawer = false

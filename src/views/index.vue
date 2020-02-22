@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <span class="my-title-font">{{ name }}，欢迎登陆项目管理系统</span>
+    <span class="my-title-font">欢迎登陆项目管理系统</span>
     <br><br>
     <el-row>
 <!--      新建任务-->
@@ -30,28 +30,47 @@
     <br><br>
 <!--    正在进行的任务-->
     <div class="my-mouse-link">
-      <el-card v-for="item in taskList" :key="item.id" shadow="hover" @click.native="showTask(item)" class="my-card-hover">
+      <el-card v-for="item in taskList" :key="item.taskId" shadow="hover" @click.native="showTask(item)" class="my-card-hover">
         <span class="text item">{{ item.taskName }}</span>
         <div style="float: right;">
-          <span style="padding: 3px 10px;font-size: 13px; color: #97a8be">{{ item.taskTime }}</span>
+          <span style="padding: 3px 10px;font-size: 13px; color: #97a8be">{{ item.stopTime }}</span>
 <!--          <el-button style="padding: 3px 0" type="text" @click="showTask(item)">查看任务</el-button>-->
         </div>
       </el-card>
     </div>
 <!--    新建任务-->
-    <new-task-dialog :projectList="allPojectList" :dialogVisible.sync="newTaskDialog" @handleCancel="newTaskDialog = false" @handleClose="handleNewTaskClose" @submitForm="submitNewTaskForm"></new-task-dialog>
+    <new-task-dialog
+      :loading="addTaskLoading"
+      :projectList="projectList"
+      :dialogVisible.sync="newTaskDialog"
+      @handleCancel="newTaskDialog = false"
+      @handleClose="handleNewTaskClose"
+      @submitForm="submitNewTaskForm"/>
 <!--    新建项目-->
-    <new-project-dialog :dialogVisible.sync="newProjectDialog" @handleCancel="newProjectDialog = false" @handleClose="handleNewProClose" @submitForm="submitNewProForm"></new-project-dialog>
+    <new-project-dialog
+      :loading="addProLoading"
+      :dialogVisible.sync="newProjectDialog"
+      @handleCancel="newProjectDialog = false"
+      @handleClose="handleNewProClose"
+      @submitForm="submitNewProForm"/>
 <!--    查看任务-->
-    <edit-task-dialog :dialogVisible.sync="editTaskDialog" @handleCancel="editTaskDialog = false" @handleClose="handleEditTaskClose" @submitForm="submitEditTaskForm"></edit-task-dialog>
+    <edit-task-dialog
+      :dialogForm="taskInfo"
+      :loading="editTaskLoading"
+      :dialogVisible.sync="editTaskDialog"
+      @handleCancel="editTaskDialog = false"
+      @handleClose="handleEditTaskClose"
+      @submitForm="submitEditTaskForm"/>
   </div>
 </template>
 
 <script>
+let mainLoading
 import newTaskDialog from '@/views/public/newTaskDialog'
 import newProjectDialog from '@/views/public/newProjectDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
-import { mapGetters } from 'vuex'
+import { addProject, listProject } from "@/api/project";
+import { addTask, listTask, updateTask } from "@/api/task"
 export default {
   name: 'Dashboard',
   components: {
@@ -61,51 +80,35 @@ export default {
   },
   data() {
     return {
+      taskInfo: {},
+      addProLoading: false,
+      addTaskLoading: false,
+      editTaskLoading: false,
       newTaskDialog: false,
       editTaskDialog: false,
       newProjectDialog: false,
-      taskList: [
-        {
-          id: 1,
-          taskName: '新增任务模块待完成',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        },
-        {
-          id: 2,
-          taskName: '任务管理系统对接后台',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        },
-        {
-          id: 3,
-          taskName: '前端路由配置',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        }
-      ],
-      allPojectList: [
-        {
-          id: 1,
-          value: '测试项目1'
-        },
-        {
-          id: 2,
-          value: '测试项目2'
-        },
-        {
-          id: 3,
-          value: '测试项目3'
-        }
-      ]
+      taskList: [],
+      projectList: []
     }
   },
-  computed: {
-    ...mapGetters([
-      'name',
-      'roles'
-    ])
+  created() {
+    this.getList()
   },
   methods: {
+    getList() {
+      listProject().then(response => {
+        this.projectList = response.rows
+      }).catch(
+      )
+    },
+    getTaskList() {
+      listTask().then(response => {
+        this.taskList = response.rows
+      }).catch(
+      )
+    },
     showTask(item) {
-      console.log(item)
+      this.taskInfo = item
       this.editTaskDialog = true
     },
     handleNewTaskClose(done) {
@@ -117,7 +120,19 @@ export default {
         .catch(_ => {})
     },
     submitNewTaskForm(val) {
-      console.log(val)
+      this.addTaskLoading = true
+      addTask(val).then(response => {
+        this.addTaskLoading = true
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          this.newTaskDialog = false
+        } else {
+          this.addTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.addTaskLoading = false
+      )
     },
     handleNewProClose(done) {
       this.$confirm('确认关闭？')
@@ -128,7 +143,18 @@ export default {
         .catch(_ => {})
     },
     submitNewProForm(val) {
-      console.log(val)
+      this.addProLoading = true
+      addProject(val).then(response => {
+        this.addProLoading = false
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          this.newProjectDialog = false
+        } else {
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.addProLoading = false
+      )
     },
     handleEditTaskClose(done) {
       this.$confirm('确认关闭？')
@@ -139,7 +165,19 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
-      console.log(val)
+      this.editTaskLoading = true
+      updateTask(val).then(response => {
+        this.editTaskLoading = true
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          this.editTaskDialog = false
+        } else {
+          this.editTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.editTaskLoading = false
+      )
     }
   }
 }

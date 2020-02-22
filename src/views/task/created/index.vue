@@ -15,6 +15,8 @@
       @handleClose="handleClose"
       @submitForm="submitForm"/>
     <edit-task-dialog
+      :dialogForm="taskInfo"
+      :loading="editTaskLoading"
       :dialogVisible.sync="editTaskDialog"
       @handleCancel="editTaskDialog = false"
       @handleClose="handleEditClose"
@@ -27,7 +29,7 @@ import newTaskDialog from '@/views/public/newTaskDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
-import { addTask, listTask } from "@/api/task"
+import { addTask, listTask, updateTask } from "@/api/task"
 import { listProject } from "@/api/project";
 let mainLoading
 export default {
@@ -40,35 +42,14 @@ export default {
   },
   data() {
     return {
+      taskInfo: {},
       taskNum: 0,
       addTaskLoading: false,
+      editTaskLoading: false,
       newTaskDialog: false,
       editTaskDialog: false,
-      taskData: {
-        projectId: null,
-        taskName: null,
-        users: [],
-        taskDate: null,
-        remark: null
-      },
       taskDialog: false,
-      taskList: [
-        {
-          id: 1,
-          taskName: '新增任务模块待完成',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        },
-        {
-          id: 2,
-          taskName: '任务管理系统对接后台',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        },
-        {
-          id: 3,
-          taskName: '前端路由配置',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        }
-      ],
+      taskList: [],
       pojectList: [],
       taskSort1: [],
       taskSort2: []
@@ -85,9 +66,13 @@ export default {
   },
   methods: {
     getList() {
+      this.startLoading()
       listTask().then(response => {
-        console.log(response)
-      })
+        this.endLoading()
+        this.taskList = response.rows
+      }).catch(
+        this.endLoading()
+      )
     },
     getProjectList() {
       listProject().then(response => {
@@ -97,13 +82,9 @@ export default {
     },
     newTaskWindow() {
       this.newTaskDialog = true
-      this.getProjectList()
-      this.getUserList()
     },
     showTask(val) {
-      console.log(this.editTaskDialog)
-      // console.log(val)
-      this.taskData = val
+      this.taskInfo = item
       this.editTaskDialog = true
     },
     handleClose(done) {
@@ -138,7 +119,19 @@ export default {
         .catch(_ => {})
     },
     submitEditForm(val) {
-      console.log(val)
+      this.editTaskLoading = true
+      updateTask(val).then(response => {
+        this.editTaskLoading = true
+        if (response.code === 200) {
+          this.msgSuccess("新增成功");
+          this.editTaskDialog = false
+        } else {
+          this.editTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.editTaskLoading = false
+      )
     },
     sort1Command(val) {
       console.log(val)

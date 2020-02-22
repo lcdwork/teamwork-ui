@@ -22,6 +22,7 @@
       <!--          {{val.data.taskName}}-->
       <!--        </template>-->
     </task-card-list>
+<!--    新增任务-->
     <new-task-dialog
       :loading="addTaskLoading"
       :projectList="pojectList"
@@ -29,7 +30,15 @@
       @handleCancel="newTaskDialog = false"
       @handleClose="handleNewTaskClose"
       @submitForm="submitNewTaskForm"/>
-    <edit-task-dialog :dialogVisible.sync="editTaskDialog" @handleCancel="editTaskDialog = false" @handleClose="handleEditTaskClose" @submitForm="submitEditTaskForm"></edit-task-dialog>
+<!--    编辑任务-->
+    <edit-task-dialog
+      :dialogForm="taskInfo"
+      :loading="editTaskLoading"
+      :dialogVisible.sync="editTaskDialog"
+      @handleCancel="editTaskDialog = false"
+      @handleClose="handleEditTaskClose"
+      @submitForm="submitEditTaskForm"/>
+<!--    删除任务-->
     <del-task-dialog
       :loading="delTaskLoading"
       :dialogVisible.sync="delTaskDialog"
@@ -43,7 +52,14 @@
         <el-button type="danger" @click="submitProjectDelForm" :loading="delLoading">{{ delLoading ? '提交中 ...' : '删 除' }}</el-button>
       </span>
     </el-dialog>
-    <new-project-dialog :loading="editLoading" :dialogDate="editProjectDate" :dialogForm="editProjectInfo" dialogTitle="编辑项目" :dialogVisible.sync="editProjectDialog" @handleCancel="editProjectDialog = false" @handleClose="handleEditProjectClose" @submitForm="submitEditProjectForm"></new-project-dialog>
+    <new-project-dialog
+      :loading="editLoading"
+      :dialogForm="editProjectInfo"
+      dialogTitle="编辑项目"
+      :dialogVisible.sync="editProjectDialog"
+      @handleCancel="editProjectDialog = false"
+      @handleClose="handleEditProjectClose"
+      @submitForm="submitEditProjectForm"/>
     <notify-drawer drawerTitle="操作历史" :drawerVisible="historyDrawer" @handleClose="handleHistoryClose">
       <el-timeline class="demo-drawer__timeline" :style="{'height': drawerHeight + 'px'}">
         <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
@@ -84,8 +100,10 @@ export default {
   },
   data() {
     return {
+      taskInfo: {},
       delLoading: false,
       addTaskLoading: false,
+      editTaskLoading: false,
       delTaskLoading: false,
       editLoading: false,
       currentPage: 10,
@@ -96,7 +114,6 @@ export default {
       delProjectDialog: false,
       projectInfo: {},
       editProjectInfo: {},
-      editProjectDate: [],
       newTaskDialog: false,
       editTaskDialog: null,
       newTaskForm: {
@@ -108,23 +125,7 @@ export default {
       },
       taskSort1: [],
       taskSort2: [],
-      taskList: [
-        {
-          id: 1,
-          taskName: '新增任务模块待完成',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        },
-        {
-          id: 2,
-          taskName: '任务管理系统对接后台',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        },
-        {
-          id: 3,
-          taskName: '前端路由配置',
-          taskTime: '2019/12/31 10:10 - 2020/2/10 18:00'
-        }
-      ],
+      taskList: [],
       pojectList: [],
       activities: [
         {
@@ -177,7 +178,7 @@ export default {
       console.log(`当前页: ${val}`)
     },
     showTask(val) {
-      console.log(val)
+      this.taskInfo = val
       this.editTaskDialog = true
     },
     delTaskFun(item) {
@@ -197,14 +198,17 @@ export default {
       this.projectInfo = routerParams
     },
     getTaskList() {
+      this.startLoading()
       listTask().then(response => {
-        console.log(response)
-      })
+        this.endLoading()
+        this.taskList = response.rows
+      }).catch(
+        this.endLoading()
+      )
     },
     getProjectList() {
       listProject().then(response => {
         this.pojectList = response.rows
-        console.log(response)
       })
     },
     newTaskFun() {
@@ -260,6 +264,7 @@ export default {
         this.delTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("删除成功");
+          this.getTaskList()
           this.delTaskDialog = false
         } else {
           this.msgError(response.msg);
@@ -320,8 +325,8 @@ export default {
       // this.$delete(obj,'projectName')
       var date = [obj.startDate, obj.endDate]
       delete obj.startDate, obj.endDate
+      obj.dialogDate = date
       this.editProjectInfo = obj
-      this.editProjectDate = date
       this.editProjectDialog = true
     },
     submitProjectDelForm() {

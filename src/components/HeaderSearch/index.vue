@@ -8,7 +8,7 @@
       filterable
       default-first-option
       remote
-      placeholder="Search"
+      placeholder="系统功能搜索"
       class="header-search-select"
       @change="change"
     >

@@ -69,7 +69,7 @@ export default {
     },
     newProjectWindow() {
       this.projectDate = []
-      this.projectForm = {}
+      console.log(this.projectForm)
       this.newProjectDialog = true
     },
     sort1Command(val) {

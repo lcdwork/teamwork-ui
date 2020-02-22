@@ -15,19 +15,19 @@
           :picker-options="projectOptions"/>
       </el-form-item>
       <el-form-item label="项目人员">
-        <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="click">
+        <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
           <span>联系方式：{{ item.phonenumber }}</span>
           <div style="text-align: right; margin: 0">
-            <el-button type="danger" @click="removeUser(item)">移除</el-button>
+            <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
           </div>
           <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
         </el-popover>
-        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="click">
+        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
           <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
             <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
             <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
           </el-card>
-          <el-button slot="reference" icon="el-icon-plus" circle />
+          <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
         </el-popover>
       </el-form-item>
       <el-form-item label="项目描述">
@@ -58,9 +58,6 @@ export default {
     loading: {
       type: Boolean,
     },
-    dialogDate: {
-      type: Array
-    },
     dialogForm: {
       type: Object,
       default () {
@@ -75,6 +72,7 @@ export default {
   data() {
     return {
       userList: [],
+      dialogDate: [],
       userPopover: false,
       projectOptions: {
         shortcuts: [{
@@ -124,17 +122,24 @@ export default {
   created() {
     this.getUserList()
   },
+  watch: {
+    dialogForm(val) {
+      if(val.dialogDate !== undefined && val.dialogDate.length === 2) {
+        this.dialogDate = val.dialogDate
+      }
+    }
+  },
   methods: {
     getUserList() {
       listUser().then(response => {
         this.userList = response.rows;
       })
     },
-    removeUser(item) {
-      this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
-    },
     chooseUser(item) {
       this.userPopover = false
+      if(this.dialogForm.userList === undefined) {
+        this.dialogForm.userList = []
+      }
       if(this.dialogForm.userList.filter(t => t.userId == item.userId).length > 0) {
         this.$notify({
           title: '添加失败',
@@ -144,6 +149,12 @@ export default {
       } else {
         this.dialogForm.userList.push(item)
       }
+    },
+    removeUser(item) {
+      this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
+      // TODO 临时解决删除人员不刷新问题
+      this.userPopover = true
+      this.userPopover = false
     },
     handleCancel(){
       this.$emit('handleCancel')

@@ -2,12 +2,14 @@
   <el-dialog title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
     <el-form ref="form" :model="dialogForm" label-width="80px">
       <el-form-item label="所属项目">
-        <el-dropdown @command="chooseProject">
-          <span class="el-dropdown-link"><i class="el-icon-s-order" />{{ dialogForm.projectName }}<i class="el-icon-arrow-down el-icon--right" /></span>
-          <el-dropdown-menu align="center">
-            <el-dropdown-item v-for="item in projectList" :key="item.projectId" :command="{projectId:item.projectId,projectName:item.projectName}"> {{ item.projectName }}</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
+        <el-select v-model="dialogForm.projectId" placeholder="所属项目" clearable size="small">
+          <el-option
+            v-for="item in projectList"
+            :key="item.projectId"
+            :label="item.projectName"
+            :value="item.projectId"
+          />
+        </el-select>
       </el-form-item>
       <el-form-item label="任务标题">
         <el-input v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
@@ -15,7 +17,6 @@
       <el-form-item label="任务时间">
         <el-date-picker
           v-model="taskTime"
-          value-format="yyyy-MM-dd HH:mm:ss"
           type="datetimerange"
           :picker-options="pickerOptions"
           range-separator="至"
@@ -82,12 +83,11 @@ export default {
       taskTime: [],
       dialogForm: {
         projectId: null,
-        projectName: '选择项目',
+        projectName: null,
         taskName: null,
         userList: [],
         remark: null
       },
-      projectName: '选择项目',
       userPopover: false,
       tagBtnPopover: false,
       pickerOptions: {
@@ -131,7 +131,7 @@ export default {
       if(val === true) {
         this.dialogForm = {
           projectId: null,
-          projectName: '选择项目',
+          projectName: null,
           taskName: null,
           userList: [],
           remark: null
@@ -151,11 +151,6 @@ export default {
     },
     submitForm(val) {
       this.$emit('submitForm',this.dialogForm)
-    },
-    chooseProject(command) {
-      console.log(command)
-      this.dialogForm.projectName = command.projectName
-      this.dialogForm.projectId = command.value
     },
     chooseUser(item) {
       this.userPopover = false
@@ -180,12 +175,13 @@ export default {
     },
     submitForm() {
       var val = this.dialogForm;
-      val.startTime = "";
-      val.stopTime = "";
+      val.startTime = null;
+      val.stopTime = null;
       if (null != this.taskTime && '' != this.taskTime) {
         val.startTime = this.taskTime[0];
         val.stopTime = this.taskTime[1];
       }
+      console.log(this.dialogForm)
       this.$emit('submitForm', val)
     }
   }

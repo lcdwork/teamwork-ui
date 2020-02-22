@@ -4,7 +4,7 @@
       <el-aside width="55%" style="background: #fff;">
         <el-form ref="form" :model="dialogForm" label-width="80px">
           <el-form-item label="所属项目">
-            <span><i class="el-icon-s-order" />{{ dialogForm.projectName }}<i class="el-icon-arrow-down el-icon&#45;&#45;right" /></span>
+            <span><i class="el-icon-s-order" />{{ dialogForm.projectName }}</span>
           </el-form-item>
           <el-form-item label="任务标题" style="margin-right: 40px">
             <el-input v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
@@ -13,7 +13,7 @@
             <el-dropdown trigger="click" @command="statusCommand">
               <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
               <el-dropdown-menu align="center">
-                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictValue" :style="{'color': item.cssClass}" :command="{dictValue:item.dictValue,dictLabel:item.dictLabel}"> {{ item.dictLabel }}</el-dropdown-item>
+                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictValue" :style="{'color': item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -27,20 +27,19 @@
             </el-popover>
           </el-form-item>
           <el-form-item label="任务人员">
-            <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.name" width="200" trigger="click">
+            <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
               <span>联系方式：{{ item.phonenumber }}</span>
               <div style="text-align: right; margin: 0">
-                <el-button type="danger" @click="removeUser(item)">移除</el-button>
+                <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
               </div>
-<!--                <el-avatar slot="reference" style="margin: 0 5px -15px 0">{{item.name}}</el-avatar>-->
-              <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar"/>
+              <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
             </el-popover>
             <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
               <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
                 <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
                 <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
               </el-card>
-              <el-button slot="reference" icon="el-icon-plus" circle />
+              <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
             </el-popover>
           </el-form-item>
           <el-form-item label="任务描述" style="margin-right: 40px">
@@ -134,12 +133,6 @@ export default {
         return '编辑任务'
       }
     },
-    statusDropdown: {
-      type: Object,
-      default () {
-        return {}
-      }
-    },
     dialogForm: {
       type: Object,
       default () {
@@ -164,6 +157,7 @@ export default {
       taskTag: [],
       userList: [],
       taskStatusList: [],
+      statusDropdown: {},
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -196,12 +190,18 @@ export default {
   created() {
     this.getUserList()
     this.getDicts("task_status").then(response => {
-      console.log(response.data)
       this.taskStatusList = response.data;
     })
     this.getDicts("task_tag").then(response => {
       this.taskTag = response.data;
     })
+  },
+  watch: {
+    dialogForm(val) {
+      this.statusDropdown = this.taskStatusList.find(v => v.dictVaule === val.status)
+      console.log(this.statusDropdown)
+      this.tagBtn = this.taskTag.find(v => v.dictVaule === val.taskTag)
+    }
   },
   methods: {
     getUserList() {
@@ -217,13 +217,29 @@ export default {
       this.$emit('submitForm',this.dialogForm)
     },
     chooseProject(command) {
-      console.log(command)
       this.dialogForm.projectName = command.label
       this.dialogForm.projectId = command.value
     },
     chooseUser(item) {
+      if(this.dialogForm.userList === undefined) {
+        this.dialogForm.userList = []
+      }
       this.userPopover = false
-      console.log(item)
+      if(this.dialogForm.userList.filter(t => t.userId == item.userId).length > 0) {
+        this.$notify({
+          title: '添加失败',
+          message: '不允许重复添加同一人员',
+          type: 'danger'
+        })
+      } else {
+        this.dialogForm.userList.push(item)
+      }
+    },
+    removeUser(item) {
+      this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
+      // TODO 临时解决删除人员不刷新问题
+      this.userPopover = true
+      this.userPopover = false
     },
     handleCancel(){
       this.$emit('handleCancel')
@@ -242,9 +258,7 @@ export default {
       this.$emit('submitForm', val)
     },
     statusCommand(command) {
-      console.log(command)
-      this.statusDropdown.dictLabel = command.dictLabel
-      this.statusDropdown.dictValue = command.dictValue
+      this.statusDropdown = command
     }
   }
 }
