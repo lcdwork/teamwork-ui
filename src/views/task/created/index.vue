@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <span class="my-title-font">我创建的·{{ taskNum }}</span>
+    <span class="my-title-font">我创建的 · {{ taskNum }}</span>
     <div style="float: right;">
       <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
       <el-button type="primary" size="small"  @click="newTaskWindow">新建</el-button>
@@ -42,6 +42,9 @@ export default {
   },
   data() {
     return {
+      sortList:{
+        status: null
+      },
       taskInfo: {},
       taskNum: 0,
       addTaskLoading: false,
@@ -56,7 +59,9 @@ export default {
     }
   },
   created() {
-    this.getList()
+    this.startLoading()
+    this.getList(null)
+    this.endLoading()
     this.getDicts("task_sort_status").then(response => {
       this.taskSort1 = response.data;
     });
@@ -65,11 +70,11 @@ export default {
     });
   },
   methods: {
-    getList() {
-      this.startLoading()
-      listTask().then(response => {
-        this.endLoading()
+    getList(val) {
+      listTask(val).then(response => {
+        console.log(response)
         this.taskList = response.rows
+        this.taskNum = response.total
       }).catch(
         this.endLoading()
       )
@@ -136,7 +141,11 @@ export default {
       )
     },
     sort1Command(val) {
-      console.log(val)
+      if (val.dictKey === 0) {
+        val.dictKey = null
+      }
+      this.sortList.status = val.dictKey
+      this.getList(this.sortList)
     },
     sort2Command(val) {
       console.log(val)

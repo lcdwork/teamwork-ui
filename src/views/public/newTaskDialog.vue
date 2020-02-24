@@ -129,7 +129,7 @@ export default {
     });
     this.getDicts("task_status").then(response => {
       this.taskStatusList = response.data;
-      this.defaultStatus = this.taskStatusList.find(v => v.isDefault === 'Y')
+      this.defaultStatus = this.taskStatusList.find(v => v.isDefault === 'Y').dictKey
     })
   },
   watch: {
