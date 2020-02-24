@@ -4,6 +4,14 @@
       <el-form-item label="项目名称">
         <el-input placeholder="项目名称" v-model="dialogForm.projectName" />
       </el-form-item>
+      <el-form-item v-if="dialogTitle == '编辑项目'" label="项目状态">
+        <el-dropdown trigger="click" @command="statusCommand">
+          <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
+          <el-dropdown-menu align="center">
+            <el-dropdown-item v-for="item in projectStatusList" :key="item.dictKey" :style="{'color': item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </el-form-item>
       <el-form-item label="计划时间">
         <el-date-picker
           v-model="dialogDate"
@@ -64,13 +72,17 @@ export default {
         return {
           userList: [],
           projectName: null,
-          remark: null
+          remark: null,
+          status: null
         }
       }
     }
   },
   data() {
     return {
+      statusDropdown: {},
+      projectStatusList: [],
+      defaultStatus: null,
       userList: [],
       dialogDate: [],
       userPopover: false,
@@ -121,11 +133,22 @@ export default {
   },
   created() {
     this.getUserList()
+    this.getDicts("project_status").then(response => {
+      this.projectStatusList = response.data;
+      this.statusDropdown = this.projectStatusList.find(v => v.isDefault === 'Y')
+    })
   },
   watch: {
     dialogForm(val) {
-      if(val.dialogDate !== undefined && val.dialogDate.length === 2) {
+      // if(val.dialogDate !== undefined && val.dialogDate.length === 2) {
+      //   this.dialogDate = val.dialogDate
+      // }
+      if(this.dialogTitle === '编辑项目') {
         this.dialogDate = val.dialogDate
+        this.statusDropdown = this.projectStatusList.find(v => v.dictKey === val.status)
+      } else {
+        this.statusDropdown = this.projectStatusList.find(v => v.isDefault === 'Y')
+        this.dialogForm.status = this.statusDropdown.dictKey
       }
     }
   },
@@ -171,11 +194,27 @@ export default {
         val.endDate = this.dialogDate[1];
       }
       this.$emit('submitForm', val)
+    },
+    statusCommand(command) {
+      this.statusDropdown = command
+      this.dialogForm.status = command.dictKey
     }
   }
 }
 </script>
 
 <style scoped>
-
+.status-dropdown {
+  cursor: pointer;
+  background: rgba(0, 0, 0, .025);
+  border-radius: 5px;
+  padding: 8px;
+}
+.status-dropdown:hover {
+  color: #409EFF;
+  transition: color 0.3s ease;
+}
+.status-dropdown:focus {
+  outline: none;
+}
 </style>

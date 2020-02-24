@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <span class="my-title-font">项目管理·{{projectList.length}}</span>
+    <span class="my-title-font">项目管理 · {{projectList.length}}</span>
     <div style="float: right;">
       <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
       <el-button type="primary" size="small" style="margin-right: 20px" @click="newProjectWindow">新建</el-button>
@@ -39,6 +39,10 @@ export default {
   },
   data() {
     return {
+      sortList:{
+        status: null,
+        orderByColumn: undefined
+      },
       projectDate: [],
       projectForm: {},
       addLoading: false,
@@ -49,19 +53,19 @@ export default {
     }
   },
   created() {
-    this.getList()
     this.getDicts("project_sort_status").then(response => {
       this.taskSort1 = response.data;
     });
     this.getDicts("project_sort_time").then(response => {
       this.taskSort2 = response.data;
     });
+    this.startLoading()
+    this.getList(null)
+    this.endLoading()
   },
   methods: {
-    getList() {
-      this.startLoading()
-      listProject().then(response => {
-        this.endLoading()
+    getList(val) {
+      listProject(val).then(response => {
         this.projectList = response.rows
       }).catch(
         this.endLoading()
@@ -73,10 +77,15 @@ export default {
       this.newProjectDialog = true
     },
     sort1Command(val) {
-      console.log(val)
+      if (val.dictKey === 0) {
+        val.dictKey = null
+      }
+      this.sortList.status = val.dictKey
+      this.getList(this.sortList)
     },
     sort2Command(val) {
-      console.log(val)
+      this.sortList.orderByColumn = val.dictValue
+      this.getList(this.sortList)
     },
     submitForm(val) {
       this.addLoading = true

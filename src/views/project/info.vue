@@ -101,6 +101,10 @@ export default {
   },
   data() {
     return {
+      sortList:{
+        status: null,
+        orderByColumn: undefined
+      },
       taskInfo: {},
       delLoading: false,
       addTaskLoading: false,
@@ -162,7 +166,9 @@ export default {
   },
   created() {
     this.getParams()
-    this.getTaskList()
+    this.startLoading()
+    this.getTaskList(null)
+    this.endLoading()
     this.getProjectList()
     this.getDicts("task_sort_status").then(response => {
       this.taskSort1 = response.data;
@@ -201,10 +207,8 @@ export default {
       }
       this.projectInfo = routerParams
     },
-    getTaskList() {
-      this.startLoading()
-      listTask().then(response => {
-        this.endLoading()
+    getTaskList(val) {
+      listTask(val).then(response => {
         this.taskList = response.rows
       }).catch(
         this.endLoading()
@@ -280,7 +284,7 @@ export default {
         this.delTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("删除成功");
-          this.getTaskList()
+          this.getTaskList(this.sortList)
           this.delTaskDialog = false
         } else {
           this.msgError(response.msg);
@@ -312,10 +316,15 @@ export default {
       )
     },
     sort1Command(val) {
-      console.log(val)
+      if (val.dictKey === 0) {
+        val.dictKey = null
+      }
+      this.sortList.status = val.dictKey
+      this.getTaskList(this.sortList)
     },
     sort2Command(val) {
-      console.log(val)
+      this.sortList.orderByColumn = val.dictValue
+      this.getTaskList(this.sortList)
     },
     historyWindow() {
       this.historyDrawer = true

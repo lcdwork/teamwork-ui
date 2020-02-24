@@ -11,23 +11,23 @@
       placeholder="请输入任务名称"
       @select="handleSelect">
       <template slot-scope="{ item }">
-        <span class="name">{{ item.value }}</span><br>
-        <span class="addr">{{ item.address }}</span>
+        <span class="name">{{ item.taskName }}</span><br>
+        <span class="addr">{{ item.remark }}</span>
       </template>
     </el-autocomplete>
 
     <div class="right-menu">
 
-<!--      <el-tooltip  effect="dark" content="通知" placement="bottom">-->
-        <a @click.sync="notifyDrawer = true" class="navbar-icon">
-          <el-badge style="position: initial;" :value="notifyNum" :max="99">
-            <i class="el-icon-bell"></i>
-          </el-badge>
-        </a>
-<!--      </el-tooltip>-->
-<!--      <el-tooltip class="item" effect="dark"  content="日历" placement="bottom">-->
-        <a @click="calDrawerWindow" class="navbar-icon"><i class="el-icon-date"></i></a>
-<!--      </el-tooltip>-->
+      <!--      <el-tooltip  effect="dark" content="通知" placement="bottom">-->
+      <a @click.sync="notifyDrawer = true" class="navbar-icon">
+        <el-badge style="position: initial;" :value="notifyNum" :max="99">
+          <i class="el-icon-bell"></i>
+        </el-badge>
+      </a>
+      <!--      </el-tooltip>-->
+      <!--      <el-tooltip class="item" effect="dark"  content="日历" placement="bottom">-->
+      <a @click="calDrawerWindow" class="navbar-icon"><i class="el-icon-date"></i></a>
+      <!--      </el-tooltip>-->
       <el-divider class="navbar-center" direction="vertical"></el-divider>
 
       <template v-if="device!=='mobile'">
@@ -35,9 +35,9 @@
 
         <screenfull id="screenfull" class="right-menu-item hover-effect" />
 
-<!--        <el-tooltip content="布局大小" effect="dark" placement="bottom">-->
-<!--          <size-select id="size-select" class="right-menu-item hover-effect" />-->
-<!--        </el-tooltip>-->
+        <!--        <el-tooltip content="布局大小" effect="dark" placement="bottom">-->
+        <!--          <size-select id="size-select" class="right-menu-item hover-effect" />-->
+        <!--        </el-tooltip>-->
 
       </template>
 
@@ -53,15 +53,22 @@
           <router-link to="/user/profile">
             <el-dropdown-item>个人中心</el-dropdown-item>
           </router-link>
-<!--          <el-dropdown-item>-->
-<!--            <span @click="setting = true">布局设置</span>-->
-<!--          </el-dropdown-item>-->
+          <!--          <el-dropdown-item>-->
+          <!--            <span @click="setting = true">布局设置</span>-->
+          <!--          </el-dropdown-item>-->
           <el-dropdown-item divided style="color: #F56C6C">
             <span @click="logout">退出登录</span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <edit-task-dialog
+      :dialogForm="taskInfo"
+      :loading="editTaskLoading"
+      :dialogVisible.sync="editTaskDialog"
+      @handleCancel="editTaskDialog = false"
+      @handleClose="handleEditClose"
+      @submitForm="submitEditForm"/>
     <el-drawer :withHeader="false" :visible.sync="calDrawer" size="50%" direction="rtl">
       <div class="demo-drawer__header">
         <span style="outline: none;" role="heading" tabindex="0">任务日历</span>
@@ -123,6 +130,8 @@ import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import notifyDrawer from '@/views/public/notifyDrawer'
+import { listTask, updateTask } from "@/api/task"
+import editTaskDialog from '@/views/public/editTaskDialog'
 
 export default {
   components: {
@@ -131,7 +140,8 @@ export default {
     Screenfull,
     SizeSelect,
     Search,
-    notifyDrawer
+    notifyDrawer,
+    editTaskDialog
   },
   computed: {
     ...mapGetters([
@@ -153,6 +163,9 @@ export default {
   },
   data() {
     return {
+      taskInfo: {},
+      editTaskLoading: false,
+      editTaskDialog: false,
       // 搜索框
       restaurants: [],
       state: '',
@@ -245,37 +258,45 @@ export default {
     },
     // 搜索框方法
     querySearchAsync(queryString, cb) {
-      var restaurants = this.restaurants
-      var results = queryString ? restaurants.filter(this.createStateFilter(queryString)) : restaurants;
-
-      clearTimeout(this.timeout)
-      this.timeout = setTimeout(() => {
-        cb(results)
-      }, 3000 * Math.random())
-    },
-    // 搜索框方法
-    createStateFilter(queryString) {
-      return (state) => {
-        return (state.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0)
+      if(queryString !== undefined && queryString !== ''){
+        listTask({taskName: queryString}).then(response => {
+          cb(response.rows)
+        })
       }
     },
     // 搜索框方法
     handleSelect(item) {
-      console.log(item)
-    },
-    // 搜索框方法
-    loadAll() {
-      return [
-        { "value": "三全鲜食（北新泾店）", "address": "长宁区新渔路144号" },
-        { "value": "Hot honey 首尔炸鸡（仙霞路）", "address": "上海市长宁区淞虹路661号" },
-        { "value": "新旺角茶餐厅", "address": "上海市普陀区真北路988号创邑金沙谷6号楼113" }
-      ]
+      this.taskInfo = item
+      this.editTaskDialog = true
     },
     handleNotifyClose() {
       this.notifyDrawer = false
     },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
+    },
+    handleEditClose(done) {
+      this.$confirm('确认关闭？')
+        .then(_ => {
+          this.editTaskDialog = false
+          done()
+        })
+        .catch(_ => {})
+    },
+    submitEditForm(val) {
+      this.editTaskLoading = true
+      updateTask(val).then(response => {
+        this.editTaskLoading = false
+        if (response.code === 200) {
+          this.msgSuccess("编辑成功");
+          this.editTaskDialog = false
+        } else {
+          this.editTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.editTaskLoading = false
+      )
     },
     intervalFun() {
       this.notifyNum = this.notifyNum + 1
@@ -323,9 +344,6 @@ export default {
     }
   },
   mounted() {
-    // 搜索框方法
-    // this.restaurants = this.loadAll()
-    //
     this.intervalFun()
     setInterval(() => {
       setTimeout(() => {
@@ -527,7 +545,7 @@ export default {
   position: absolute;
   display: inline-block;
   left: 40%;
-  top: 5px;
+  top: 6px;
   width: 300px;
   .el-input {
     position: relative;
@@ -545,8 +563,8 @@ export default {
       color: #606266;
       display: inline-block;
       font-size: inherit;
-      height: 40px;
-      line-height: 40px;
+      height: 38px;
+      line-height: 38px;
       outline: 0;
       padding: 0 15px;
       -webkit-transition: border-color .2s cubic-bezier(.645,.045,.355,1);

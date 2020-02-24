@@ -43,7 +43,8 @@ export default {
   data() {
     return {
       sortList:{
-        status: null
+        status: null,
+        orderByColumn: undefined
       },
       taskInfo: {},
       taskNum: 0,
@@ -105,7 +106,7 @@ export default {
     submitForm(val) {
       this.addTaskLoading = true
       addTask(val).then(response => {
-        this.addTaskLoading = true
+        this.addTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("新增成功");
           this.newTaskDialog = false
@@ -128,7 +129,7 @@ export default {
     submitEditForm(val) {
       this.editTaskLoading = true
       updateTask(val).then(response => {
-        this.editTaskLoading = true
+        this.editTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("编辑成功");
           this.editTaskDialog = false
@@ -148,7 +149,8 @@ export default {
       this.getList(this.sortList)
     },
     sort2Command(val) {
-      console.log(val)
+      this.sortList.orderByColumn = val.dictValue
+      this.getList(this.sortList)
     },
     startLoading() {
       mainLoading = this.$loading({
