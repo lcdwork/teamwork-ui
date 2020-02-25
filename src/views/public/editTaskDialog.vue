@@ -2,12 +2,12 @@
   <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" top="5vh" :before-close="handleClose" width="70%">
     <el-container>
       <el-aside width="55%" style="background: #fff;">
-        <el-form ref="form" :model="dialogForm" label-width="80px">
+        <el-form ref="form" :model="dialogForm" :rules="rules" label-width="80px">
           <el-form-item label="所属项目">
             <span><i class="el-icon-s-order" />{{ dialogForm.projectName }}</span>
           </el-form-item>
-          <el-form-item label="任务标题" style="margin-right: 40px">
-            <el-input v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
+          <el-form-item label="任务标题" style="margin-right: 40px" prop="taskName">
+            <el-input clearable v-model="dialogForm.taskName" placeholder="任务标题" />
           </el-form-item>
           <el-form-item label="任务状态">
             <el-dropdown trigger="click" @command="statusCommand">
@@ -17,8 +17,16 @@
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
-          <el-form-item label="任务时间">
-            <el-date-picker v-model="dialogDate" value-format="yyyy-MM-dd HH:mm:ss" type="datetimerange" :picker-options="pickerOptions" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
+          <el-form-item label="任务时间" prop="dialogDate">
+            <el-date-picker
+              v-model="dialogDate"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="datetimerange"
+              :picker-options="pickerOptions"
+              range-separator="至"
+              start-placeholder="设置开始时间"
+              end-placeholder="设置结束时间"
+              align="left" />
           </el-form-item>
           <el-form-item label="任务标签">
             <el-popover v-model="tagBtnPopover" placement="bottom" trigger="click">
@@ -137,7 +145,7 @@ export default {
       type: Object,
       default () {
         return {
-          projectName: '选择项目',
+          projectName: null,
           projectId: null,
           taskName: null,
           remark: null,
@@ -183,6 +191,25 @@ export default {
             picker.$emit('pick', [start, end])
           }
         }]
+      },
+      rules: {
+        taskName: [
+          { required: true, message: "任务名称不能为空", trigger: "blur" }
+        ],
+        dialogDate: [
+          {
+            type: 'array',
+            required: true,
+            trigger: "change",
+            validator: (rule, value, cb) =>{
+              if(this.dialogDate === null || this.dialogDate.length === 0){
+                cb(new Error("请选择时间"));
+              } else {
+                cb()
+              }
+            }
+          }
+        ]
       }
     }
   },
@@ -197,9 +224,10 @@ export default {
   },
   watch: {
     dialogForm(val) {
-      this.dialogDate = val.dialogDate
+      this.dialogDate = [val.startTime, val.stopTime]
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
       this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
+      this.resetForm("form")
 
       // if(val.status === undefined || val.status === null) {
       //   this.statusDropdown = this.taskStatusList.find(v => v.isDefault === 'Y')
@@ -220,16 +248,8 @@ export default {
       })
     },
     chooseTag(item) {
-      this.dialogForm.taskTag = item.dictKey
       this.tagBtnPopover = false
       this.tagBtn = item
-    },
-    submitForm(val) {
-      this.$emit('submitForm',this.dialogForm)
-    },
-    chooseProject(command) {
-      this.dialogForm.projectName = command.label
-      this.dialogForm.projectId = command.value
     },
     chooseUser(item) {
       if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
@@ -248,9 +268,8 @@ export default {
     },
     removeUser(item) {
       this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
-      // TODO 临时解决删除人员不刷新问题
-      this.userPopover = true
-      this.userPopover = false
+      // this.userPopover = true
+      // this.userPopover = false
     },
     handleCancel(){
       this.$emit('handleCancel')
@@ -259,18 +278,29 @@ export default {
       this.$emit("handleClose")
     },
     submitForm() {
-      var val = this.dialogForm;
-      val.startTime = null;
-      val.stopTime = null;
-      if (null != this.dialogDate && '' != this.dialogDate) {
-        val.startTime = this.dialogDate[0];
-        val.stopTime = this.dialogDate[1];
-      }
-      this.$emit('submitForm', val)
+      this.$refs["form"].validate(valid => {
+        if(valid) {
+          var val = this.dialogForm;
+          val.startTime = null;
+          val.stopTime = null;
+          this.dialogForm.taskTag = this.tagBtn.dictKey
+          this.dialogForm.status = this.statusDropdown.dictKey
+          if (null != this.dialogDate && '' != this.dialogDate) {
+            val.startTime = this.dialogDate[0];
+            val.stopTime = this.dialogDate[1];
+          }
+          this.$emit('submitForm', val)
+        } else {
+          this.$notify.error({
+            title: '表单验证失败',
+            message: '请检查表单数据'
+          })
+          this.$emit('submitForm', null)
+        }
+      })
     },
     statusCommand(command) {
       this.statusDropdown = command
-      this.dialogForm.status = command.dictKey
     }
   }
 }

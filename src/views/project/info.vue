@@ -46,19 +46,19 @@
       @handleCancel="delTaskDialog = false"
       @handleClose="handleDelTaskClose"
       @submitForm="submitDelTaskForm"/>
-    <el-dialog title="删除项目" :visible.sync="delProjectDialog" width="30%" :before-close="handleNewTaskClose">
+    <el-dialog title="删除项目" :visible.sync="delProDialog" width="30%" :before-close="handleNewTaskClose">
       <span>确认删除项目？此操作不可逆！</span>
       <span slot="footer" class="dialog-footer">
-        <el-button :disabled="delLoading" @click="delProjectDialog = false">取 消</el-button>
+        <el-button :disabled="delLoading" @click="delProDialog = false">取 消</el-button>
         <el-button type="danger" @click="submitProjectDelForm" :loading="delLoading">{{ delLoading ? '提交中 ...' : '删 除' }}</el-button>
       </span>
     </el-dialog>
-    <new-project-dialog
+<!--    编辑项目-->
+    <edit-pro-dialog
       :loading="editLoading"
-      :dialogForm="editProjectInfo"
-      dialogTitle="编辑项目"
-      :dialogVisible.sync="editProjectDialog"
-      @handleCancel="editProjectDialog = false"
+      :dialogForm="projectInfo"
+      :dialogVisible.sync="editProDialog"
+      @handleCancel="editProDialog = false"
       @handleClose="handleEditProjectClose"
       @submitForm="submitEditProjectForm"/>
     <notify-drawer drawerTitle="操作历史" :drawerVisible="historyDrawer" @handleClose="handleHistoryClose">
@@ -78,7 +78,7 @@
 
 <script>
 import notifyDrawer from '@/views/public/notifyDrawer'
-import newProjectDialog from '@/views/public/newProjectDialog'
+import editProDialog from '@/views/public/editProDialog'
 import delTaskDialog from '@/views/public/delTaskDialog'
 import newTaskDialog from '@/views/public/newTaskDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
@@ -96,7 +96,7 @@ export default {
     newTaskDialog,
     taskCardList,
     delTaskDialog,
-    newProjectDialog,
+    editProDialog,
     notifyDrawer
   },
   data() {
@@ -114,11 +114,10 @@ export default {
       currentPage: 10,
       drawerHeight: null,
       historyDrawer: false,
-      editProjectDialog: false,
+      editProDialog: false,
       delTaskDialog: false,
-      delProjectDialog: false,
+      delProDialog: false,
       projectInfo: {},
-      editProjectInfo: {},
       newTaskDialog: false,
       editTaskDialog: null,
       newTaskForm: {
@@ -185,9 +184,6 @@ export default {
       console.log(`当前页: ${val}`)
     },
     showTask(item) {
-      var date = [item.startTime, item.stopTime]
-      delete item.startDate, item.endDate
-      item.dialogDate = date
       this.taskInfo = item
       this.editTaskDialog = true
     },
@@ -233,19 +229,22 @@ export default {
         .catch(_ => {})
     },
     submitNewTaskForm(val) {
-      this.addTaskLoading = true
-      addTask(val).then(response => {
+      if(val !== null) {
         this.addTaskLoading = true
-        if (response.code === 200) {
-          this.msgSuccess("新增成功");
-          this.newTaskDialog = false
-        } else {
+        addTask(val).then(response => {
+          this.addTaskLoading = true
+          if (response.code === 200) {
+            this.msgSuccess("新增成功");
+            this.getTaskList(this.sortList)
+            this.newTaskDialog = false
+          } else {
+            this.addTaskLoading = false
+            this.msgError(response.msg);
+          }
+        }).catch(
           this.addTaskLoading = false
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.addTaskLoading = false
-      )
+        )
+      }
     },
     handleEditTaskClose(done) {
       this.$confirm('确认关闭？')
@@ -256,19 +255,22 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
-      this.editTaskLoading = true
-      updateTask(val).then(response => {
+      if(val !== null) {
         this.editTaskLoading = true
-        if (response.code === 200) {
-          this.msgSuccess("编辑成功");
-          this.editTaskDialog = false
-        } else {
+        updateTask(val).then(response => {
+          this.editTaskLoading = true
+          if (response.code === 200) {
+            this.msgSuccess("编辑成功");
+            this.getTaskList(this.sortList)
+            this.editTaskDialog = false
+          } else {
+            this.editTaskLoading = false
+            this.msgError(response.msg);
+          }
+        }).catch(
           this.editTaskLoading = false
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.editTaskLoading = false
-      )
+        )
+      }
     },
     handleDelTaskClose(done) {
       this.$confirm('确认关闭？')
@@ -296,24 +298,26 @@ export default {
     handleEditProjectClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
-          this.editProjectDialog = false
+          this.editProDialog = false
           done()
         })
         .catch(_ => {})
     },
     submitEditProjectForm(val) {
-      this.editLoading = true
-      updateProject(val).then(response => {
-        this.editLoading = false
-        if (response.code === 200) {
-          this.msgSuccess("修改成功");
-          this.editProjectDialog = false
-        } else {
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.editLoading = false
-      )
+      if(val !== null) {
+        this.editLoading = true
+        updateProject(val).then(response => {
+          this.editLoading = false
+          if (response.code === 200) {
+            this.msgSuccess("修改成功");
+            this.editProDialog = false
+          } else {
+            this.msgError(response.msg);
+          }
+        }).catch(
+          this.editLoading = false
+        )
+      }
     },
     sort1Command(val) {
       if (val.dictKey === 0) {
@@ -335,24 +339,15 @@ export default {
           this.newTaskFun()
           break
         case 'del':
-          this.delProjectDialog = true
+          this.delProDialog = true
           break
         case 'edit':
-          this.editProjectWindow()
+          this.editProDialog = true
           break
         case 'history':
           this.historyWindow()
           break
       }
-    },
-    editProjectWindow() {
-      var obj = this.projectInfo
-      // this.$delete(obj,'projectName')
-      var date = [obj.startDate, obj.endDate]
-      delete obj.startDate, obj.endDate
-      obj.dialogDate = date
-      this.editProjectInfo = obj
-      this.editProjectDialog = true
     },
     submitProjectDelForm() {
       this.delLoading = true

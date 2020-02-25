@@ -2,7 +2,6 @@
   <div class="my-mouse-link">
     <el-card :body-style="{padding: '10px'}" v-for="item in taskList" :key="item.taskId" shadow="hover" @click.native="showTask(item)" class="my-card-hover">
       <el-tag effect="light" size="mini" :style="{'color': taskStatusList.find(v => v.dictKey === item.status).cssClass}">
-<!--        :style="{'color': taskStatusList.find(v => v.dictKey === item.status).cssClass}"-->
         {{taskStatusList.find(v => v.dictKey === item.status).dictLabel}}
       </el-tag>
       <span class="text item" style="margin-left: 10px">{{ item.taskName }}</span>
@@ -48,7 +47,6 @@ export default {
   },
   methods: {
     showTask(item) {
-      console.log(item)
       this.$emit('showTask',item)
     }
   }

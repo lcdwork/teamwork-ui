@@ -71,8 +71,6 @@ export default {
   },
   methods: {
     showTask(val) {
-      console.log(this.editTaskDialog)
-      // console.log(val)
       this.taskData = val
       this.editTaskDialog = true
     },

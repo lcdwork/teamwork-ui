@@ -7,6 +7,7 @@
     </div>
     <br><br>
     <task-card-list :taskList="taskList" @showTask="showTask"></task-card-list>
+<!--    新建任务-->
     <new-task-dialog
       :loading="addTaskLoading"
       :projectList="pojectList"
@@ -14,6 +15,7 @@
       @handleCancel="newTaskDialog = false"
       @handleClose="handleClose"
       @submitForm="submitForm"/>
+<!--    编辑任务-->
     <edit-task-dialog
       :dialogForm="taskInfo"
       :loading="editTaskLoading"
@@ -89,9 +91,6 @@ export default {
       this.newTaskDialog = true
     },
     showTask(item) {
-      var date = [item.startTime, item.stopTime]
-      delete item.startDate, item.endDate
-      item.dialogDate = date
       this.taskInfo = item
       this.editTaskDialog = true
     },
@@ -104,19 +103,22 @@ export default {
         .catch(_ => {})
     },
     submitForm(val) {
-      this.addTaskLoading = true
-      addTask(val).then(response => {
-        this.addTaskLoading = false
-        if (response.code === 200) {
-          this.msgSuccess("新增成功");
-          this.newTaskDialog = false
-        } else {
+      if(val !== null) {
+        this.addTaskLoading = true
+        addTask(val).then(response => {
           this.addTaskLoading = false
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.addTaskLoading = false
-      )
+          if (response.code === 200) {
+            this.msgSuccess("新增成功");
+            this.getList(this.sortList)
+            this.newTaskDialog = false
+          } else {
+            this.addTaskLoading = false
+            this.msgError(response.msg);
+          }
+        }).catch(
+          this.addTaskLoading = false
+        )
+      }
     },
     handleEditClose(done) {
       this.$confirm('确认关闭？')
@@ -127,19 +129,22 @@ export default {
         .catch(_ => {})
     },
     submitEditForm(val) {
-      this.editTaskLoading = true
-      updateTask(val).then(response => {
-        this.editTaskLoading = false
-        if (response.code === 200) {
-          this.msgSuccess("编辑成功");
-          this.editTaskDialog = false
-        } else {
+      if(val !== null) {
+        this.editTaskLoading = true
+        updateTask(val).then(response => {
           this.editTaskLoading = false
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.editTaskLoading = false
-      )
+          if (response.code === 200) {
+            this.msgSuccess("编辑成功");
+            this.getList(this.sortList)
+            this.editTaskDialog = false
+          } else {
+            this.editTaskLoading = false
+            this.msgError(response.msg);
+          }
+        }).catch(
+          this.editTaskLoading = false
+        )
+      }
     },
     sort1Command(val) {
       if (val.dictKey === 0) {

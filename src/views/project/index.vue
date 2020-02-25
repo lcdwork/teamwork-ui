@@ -3,15 +3,13 @@
     <span class="my-title-font">项目管理 · {{projectList.length}}</span>
     <div style="float: right;">
       <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
-      <el-button type="primary" size="small" style="margin-right: 20px" @click="newProjectWindow">新建</el-button>
+      <el-button type="primary" size="small" style="margin-right: 20px" @click="newProDialog = true">新建</el-button>
     </div>
     <br><br>
-    <new-project-dialog
-      :dialogDate="projectDate"
-      :dialogForm="projectForm"
+    <new-pro-dialog
       :loading="addLoading"
-      :dialogVisible.sync="newProjectDialog"
-      @handleCancel="newProjectDialog = false"
+      :dialogVisible.sync="newProDialog"
+      @handleCancel="newProDialog = false"
       @handleClose="handleClose"
       @submitForm="submitForm"/>
     <el-col v-for="item in projectList" :key="item.id" style="width: 300px;margin-top: 20px">
@@ -28,14 +26,14 @@
 
 <script>
 import sortTask from '@/views/public/sortTask'
-import newProjectDialog from '@/views/public/newProjectDialog'
+import newProDialog from '@/views/public/newProDialog'
 import { addProject, listProject } from "@/api/project";
 let mainLoading
 export default {
-  name: 'ProjectManage',
+  name: 'index',
   components: {
     sortTask,
-    newProjectDialog
+    newProDialog
   },
   data() {
     return {
@@ -43,10 +41,8 @@ export default {
         status: null,
         orderByColumn: undefined
       },
-      projectDate: [],
-      projectForm: {},
       addLoading: false,
-      newProjectDialog: false,
+      newProDialog: false,
       projectList: [],
       taskSort1: [],
       taskSort2: []
@@ -71,11 +67,6 @@ export default {
         this.endLoading()
       )
     },
-    newProjectWindow() {
-      this.projectDate = []
-      console.log(this.projectForm)
-      this.newProjectDialog = true
-    },
     sort1Command(val) {
       if (val.dictKey === 0) {
         val.dictKey = null
@@ -88,18 +79,21 @@ export default {
       this.getList(this.sortList)
     },
     submitForm(val) {
-      this.addLoading = true
-      addProject(val).then(response => {
-        this.addLoading = false
-        if (response.code === 200) {
-          this.msgSuccess("新增成功");
-          this.newProjectDialog = false
-        } else {
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.addLoading = false
-      )
+      if(val !== null) {
+        this.addLoading = true
+        addProject(val).then(response => {
+          this.addLoading = false
+          if (response.code === 200) {
+            this.msgSuccess("新增成功");
+            this.getList(this.sortList)
+            this.newProDialog = false
+          } else {
+            this.msgError(response.msg);
+          }
+        }).catch(
+          this.addLoading = false
+        )
+      }
     },
     projectInfo(item) {
       // this.$router.push({ path: '/manage/projectInfo', params: { projectId: item.id }});
@@ -118,7 +112,7 @@ export default {
     handleClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
-          this.newProjectDialog = false
+          this.newProDialog = false
           done()
         })
         .catch(_ => {})

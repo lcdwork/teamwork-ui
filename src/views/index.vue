@@ -19,7 +19,7 @@
         <el-card class="box-card" style="margin-left: 20px; height: 180px">
           <div slot="header" class="clearfix">
             <span>项目</span>
-            <el-button style="float: right; padding: 3px 0" type="text" @click="newProjectDialog = true">新增项目</el-button>
+            <el-button style="float: right; padding: 3px 0" type="text" @click="newProDialog = true">新增项目</el-button>
           </div>
           <div class="text item">录入一个项目，团队协同开发</div>
         </el-card>
@@ -46,10 +46,10 @@
       @handleClose="handleNewTaskClose"
       @submitForm="submitNewTaskForm"/>
 <!--    新建项目-->
-    <new-project-dialog
+    <new-pro-dialog
       :loading="addProLoading"
-      :dialogVisible.sync="newProjectDialog"
-      @handleCancel="newProjectDialog = false"
+      :dialogVisible.sync="newProDialog"
+      @handleCancel="newProDialog = false"
       @handleClose="handleNewProClose"
       @submitForm="submitNewProForm"/>
 <!--    查看任务-->
@@ -65,7 +65,7 @@
 
 <script>
 import newTaskDialog from '@/views/public/newTaskDialog'
-import newProjectDialog from '@/views/public/newProjectDialog'
+import newProDialog from '@/views/public/newProDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
 import { addProject } from "@/api/project";
 import { addTask, listTask, updateTask } from "@/api/task"
@@ -73,7 +73,7 @@ export default {
   name: 'Dashboard',
   components: {
     newTaskDialog,
-    newProjectDialog,
+    newProDialog,
     editTaskDialog
   },
   data() {
@@ -84,7 +84,7 @@ export default {
       editTaskLoading: false,
       newTaskDialog: false,
       editTaskDialog: false,
-      newProjectDialog: false,
+      newProDialog: false,
       taskList: [],
       projectList: []
     }
@@ -97,13 +97,9 @@ export default {
       listTask().then(response => {
         console.log(response.rows)
         this.taskList = response.rows
-      }).catch(
-      )
+      })
     },
     showTask(item) {
-      var date = [item.startTime, item.stopTime]
-      delete item.startDate, item.endDate
-      item.dialogDate = date
       this.taskInfo = item
       this.editTaskDialog = true
     },
@@ -116,41 +112,45 @@ export default {
         .catch(_ => {})
     },
     submitNewTaskForm(val) {
-      this.addTaskLoading = true
-      addTask(val).then(response => {
+      if(val !== null) {
         this.addTaskLoading = true
-        if (response.code === 200) {
-          this.msgSuccess("新增成功");
-          this.newTaskDialog = false
-        } else {
+        addTask(val).then(response => {
+          this.addTaskLoading = true
+          if (response.code === 200) {
+            this.msgSuccess("新增成功");
+            this.newTaskDialog = false
+          } else {
+            this.addTaskLoading = false
+            this.msgError(response.msg);
+          }
+        }).catch(
           this.addTaskLoading = false
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.addTaskLoading = false
-      )
+        )
+      }
     },
     handleNewProClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
-          this.newProjectDialog = false
+          this.newProDialog = false
           done()
         })
         .catch(_ => {})
     },
     submitNewProForm(val) {
-      this.addProLoading = true
-      addProject(val).then(response => {
-        this.addProLoading = false
-        if (response.code === 200) {
-          this.msgSuccess("新增成功");
-          this.newProjectDialog = false
-        } else {
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.addProLoading = false
-      )
+      if(val !== null) {
+        this.addProLoading = true
+        addProject(val).then(response => {
+          this.addProLoading = false
+          if (response.code === 200) {
+            this.msgSuccess("新增成功");
+            this.newProDialog = false
+          } else {
+            this.msgError(response.msg);
+          }
+        }).catch(
+          this.addProLoading = false
+        )
+      }
     },
     handleEditTaskClose(done) {
       this.$confirm('确认关闭？')
@@ -161,19 +161,21 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
-      this.editTaskLoading = true
-      updateTask(val).then(response => {
+      if(val !== null) {
         this.editTaskLoading = true
-        if (response.code === 200) {
-          this.msgSuccess("编辑成功");
-          this.editTaskDialog = false
-        } else {
+        updateTask(val).then(response => {
+          this.editTaskLoading = true
+          if (response.code === 200) {
+            this.msgSuccess("编辑成功");
+            this.editTaskDialog = false
+          } else {
+            this.editTaskLoading = false
+            this.msgError(response.msg);
+          }
+        }).catch(
           this.editTaskLoading = false
-          this.msgError(response.msg);
-        }
-      }).catch(
-        this.editTaskLoading = false
-      )
+        )
+      }
     }
   }
 }
