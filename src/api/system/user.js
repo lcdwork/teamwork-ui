@@ -10,6 +10,33 @@ export function listUser(query) {
   })
 }
 
+// 查询项目下人员列表
+export function listUserByProject(data) {
+  return request({
+    url: '/system/user/getListByProjectId',
+    method: 'get',
+    params: data
+  })
+}
+
+// 查询任务下人员列表
+export function listUserByTask(data) {
+  return request({
+    url: '/system/user/getListByTaskId',
+    method: 'get',
+    params: data
+  })
+}
+
+// 查询消息公共已发送人员列表
+export function listUserByNotice(data) {
+  return request({
+    url: '/system/user/getListByNoticeId',
+    method: 'get',
+    params: data
+  })
+}
+
 // 查询用户详细
 export function getUser(userId) {
   return request({

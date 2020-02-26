@@ -10,6 +10,14 @@ export function listProject(query) {
   })
 }
 
+// 查询项目任务下拉树结构
+export function treeselect() {
+  return request({
+    url: '/project/treeselect',
+    method: 'get'
+  })
+}
+
 // 查询项目详细
 export function getProject(projectId) {
   return request({

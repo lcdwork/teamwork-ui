@@ -145,6 +145,27 @@
               </el-select>
             </el-form-item>
           </el-col>
+<!--    项目任务下拉树      -->
+          <el-col :span="12">
+            <el-tree
+              :data="projectOptions"
+              :props="defaultProps"
+              accordion
+              :expand-on-click-node="false"
+              :filter-node-method="filterNode"
+              ref="tree"
+              default-expand-all
+              @node-click="handleNodeClick"
+            />
+          </el-col>
+          <el-col :span="12">
+            <el-table v-loading="loading" :data="userList" @selection-change="handleUserSelectionChange" v-model="form.userList">
+              <el-table-column type="selection" width="40" align="center" />
+              <el-table-column label="用户编号" align="center" prop="userId" />
+              <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />
+              <el-table-column label="用户昵称" align="center" prop="nickName" :show-overflow-tooltip="true" />
+            </el-table>
+          </el-col>
           <el-col :span="24">
             <el-form-item label="状态">
               <el-radio-group v-model="form.status">
@@ -173,7 +194,9 @@
 
 <script>
 import { listNotice, getNotice, delNotice, addNotice, updateNotice, exportNotice } from "@/api/system/notice";
+import { listUserByProject, listUserByTask, listUserByNotice } from "@/api/system/user";
 import Editor from '@/components/Editor';
+import { treeselect } from "@/api/project";
 
 export default {
   name: "Notice",
@@ -182,6 +205,18 @@ export default {
   },
   data() {
     return {
+      projectOptions: undefined,
+      defaultProps: {
+        children: "children",
+        label: "label"
+      },
+      queryTreeParams: {
+        projectId: null,
+        taskId: null,
+        noticeId: null,
+      },
+      // 用户表格数据
+      userList: null,
       // 遮罩层
       loading: true,
       // 选中数组
@@ -233,6 +268,65 @@ export default {
     });
   },
   methods: {
+    /** 查询项目任务下拉树结构 */
+    getTreeselect() {
+      treeselect().then(response => {
+        this.projectOptions = response.data;
+      });
+    },
+    // 筛选节点
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.label.indexOf(value) !== -1;
+    },
+    // 节点单击事件
+    handleNodeClick(data) {
+      if (data.projectId != null) {
+        this.queryTreeParams.projectId = data.id;
+        this.getUserListByProject()
+      }
+      if (data.taskId != null) {
+        this.queryTreeParams.taskId = data.id;
+        this.getUserListByTask()
+      }
+    },
+    /** 查询项目下用户列表 */
+    getUserListByProject() {
+      this.loading = true;
+      listUserByProject(this.queryTreeParams).then(response => {
+          this.userList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        }
+      );
+    },
+    /** 查询任务下用户列表 */
+    getUserListByTask() {
+      this.loading = true;
+      listUserByTask(this.queryTreeParams).then(response => {
+          this.userList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        }
+      );
+    },
+    /** 查询消息通告已发送人员列表 */
+    getUserListByNotice() {
+      this.loading = true;
+      listUserByNotice(this.queryTreeParams).then(response => {
+          this.userList = response.rows;
+          this.total = response.total;
+          this.loading = false;
+        }
+      );
+    },
+    // 多选框选中数据
+    handleUserSelectionChange(selection) {
+      this.form.userList = selection.map(item => item.userId);
+      // this.ids = selection.map(item => item.userId);
+      // this.single = selection.length != 1;
+      // this.multiple = !selection.length;
+    },
     /** 查询公告列表 */
     getList() {
       this.loading = true;
@@ -286,15 +380,19 @@ export default {
     handleAdd() {
       this.reset();
       this.open = true;
+      this.getTreeselect();
       this.title = "添加公告";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
       const noticeId = row.noticeId || this.ids
+      this.queryTreeParams.noticeId = noticeId[0]
       getNotice(noticeId).then(response => {
         this.form = response.data;
         this.open = true;
+        this.getTreeselect();
+        this.getUserListByNotice();
         this.title = "修改公告";
       });
     },
