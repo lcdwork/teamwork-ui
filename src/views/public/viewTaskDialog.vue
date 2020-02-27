@@ -55,22 +55,23 @@
       </el-main>
     </el-container>
     <div slot="footer" class="dialog-footer">
-      <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
-      <el-button type="success" :disabled="loading" @click="receiveTask">领取任务</el-button>
+      <el-button v-if="commitStatus == 2" type="success" :disabled="loading" @click="commitTask">提交任务</el-button>
+      <el-button v-else-if="commitStatus == 1" type="warning" :disabled="loading" @click="receiveTask">领取任务</el-button>
+      <el-button :disabled="loading" @click="handleCancel" style="margin-left: 50px;">取 消</el-button>
       <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 export default {
-  computed: {
-    ...mapGetters([
-      'loginUserId'
-    ]),
-  },
   props: {
+    commitStatus: {
+      type: Number,
+      default () {
+        return 0
+      }
+    },
     loading: {
       type: Boolean,
       default () {
@@ -134,6 +135,7 @@ export default {
       type: Object,
       default () {
         return {
+          userId: null,
           projectName: null,
           projectId: null,
           taskName: null,
@@ -196,8 +198,11 @@ export default {
     }
   },
   methods: {
+    commitTask() {
+      this.$emit('commitTask', this.dialogForm)
+    },
     receiveTask() {
-      console.log(this.loginUserId)
+      this.$emit('receiveTask', this.dialogForm)
     },
     handleCancel(){
       this.$emit('handleCancel')

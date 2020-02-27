@@ -35,9 +35,11 @@
     </el-row>
     <!--    查看任务-->
     <view-task-dialog
+      :commitStatus="1"
       :dialogForm="taskInfo"
       :loading="viewTaskLoading"
       :dialogVisible.sync="viewTaskDialog"
+      @receiveTask="receiveTask"
       @handleCancel="viewTaskDialog = false"
       @handleClose="handleEditClose"
       @submitForm="submitEditForm"/>
@@ -45,14 +47,20 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
-import { listTaskByUser, updateTask } from "@/api/task"
+import { listTaskByUser, updateTask, updateUserTaskStatus } from "@/api/task"
 import { listProject } from "@/api/project";
 let mainLoading
 export default {
   name: 'index',
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
+  },
   components: {
     viewTaskDialog,
     sortTask,
@@ -64,7 +72,8 @@ export default {
         status: null,
         orderByColumn: undefined,
         projectId: null,
-        searchValue: 0
+        taskUserStatus: null,
+        taskUserId: null
       },
       taskInfo: {},
       viewTaskDialog: false,
@@ -78,6 +87,7 @@ export default {
         children: "children",
         label: "projectName"
       },
+      userTaskStatus: []
     }
   },
   created() {
@@ -92,8 +102,13 @@ export default {
     this.getDicts("task_sort_time").then(response => {
       this.taskSort2 = response.data;
     });
+    this.getDicts("user_task_status").then(response => {
+      this.userTaskStatus = response.data;
+      this.sortList.taskUserStatus = this.userTaskStatus.find(v => v.isDefault === 'Y').dictKey
+      this.sortList.taskUserId = this.loginUserId
+      this.getList(this.sortList)
+    });
     this.startLoading()
-    this.getList(this.sortList)
     this.endLoading()
     this.getProjectList()
   },
@@ -128,6 +143,25 @@ export default {
     showTask(item) {
       this.taskInfo = item
       this.viewTaskDialog = true
+    },
+    receiveTask(item) {
+      var info = {
+        userId: this.loginUserId,
+        taskId: item.taskId,
+        status: 2
+      }
+      updateUserTaskStatus(info).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess("领取成功");
+          this.getList(this.sortList)
+          this.viewTaskDialog = false
+        } else {
+          this.viewTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.viewTaskLoading = false
+      )
     },
     handleEditClose(done) {
       this.$confirm('确认关闭？')

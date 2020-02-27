@@ -52,3 +52,11 @@ export function delTask(userId) {
     method: 'delete'
   })
 }
+
+export function updateUserTaskStatus(data) {
+  return request({
+    url: '/userTask/updateByStatus',
+    method: 'put',
+    data: data
+  })
+}
