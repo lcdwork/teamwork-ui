@@ -43,9 +43,15 @@
 </template>
 
 <script>
-import { listUser } from "@/api/system/user";
-import { listProject } from "@/api/project";
+import { mapGetters } from 'vuex'
+import { getListByProjectId } from "@/api/system/user";
 export default {
+  computed: {
+    ...mapGetters([
+      'loginUserId',
+      'loginUserDept'
+    ]),
+  },
   props: {
     loading: {
       type: Boolean
@@ -57,6 +63,10 @@ export default {
   name: "NewProDialog",
   data() {
     return {
+      loginUser: {
+        userId: this.loginUserId,
+        deptId: this.loginUserDept
+      },
       userList: [],
       proTime: [],
       proStatusList: [],
@@ -132,7 +142,7 @@ export default {
     }
   },
   created() {
-    this.getUserList()
+    this.getUserList(this.loginUser)
     this.getDicts("project_status").then(response => {
       this.proStatusList = response.data;
     })
@@ -152,8 +162,8 @@ export default {
     }
   },
   methods: {
-    getUserList() {
-      listUser().then(response => {
+    getUserList(val) {
+      getListByProjectId(val).then(response => {
         this.userList = response.rows;
       })
     },

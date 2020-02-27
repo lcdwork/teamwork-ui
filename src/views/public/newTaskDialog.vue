@@ -2,7 +2,7 @@
   <el-dialog title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
     <el-form ref="form" :model="dialogForm" :rules="rules" label-width="80px">
       <el-form-item label="所属项目" prop="projectId">
-        <el-select v-model="dialogForm.projectId" placeholder="所属项目"  @change="proUsers" clearable size="small">
+        <el-select v-model="dialogForm.projectId" placeholder="所属项目" @change="proUsers" clearable size="small">
           <el-option
             v-for="item in projectList"
             :key="item.projectId"
@@ -58,9 +58,16 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { listUserByProject } from "@/api/system/user";
 import { listProject } from "@/api/project";
 export default {
+  computed: {
+    ...mapGetters([
+      'loginUserId',
+      'loginUserDept'
+    ]),
+  },
   props: {
     loading: {
       type: Boolean
@@ -72,6 +79,11 @@ export default {
   name: "taskDialog",
   data() {
     return {
+      loginUser: {
+        userId: this.loginUserId,
+        deptId: this.loginUserDept,
+        projectId: null
+      },
       tagBtn: {},
       userList: [],
       taskTag: [],
@@ -176,7 +188,8 @@ export default {
       })
     },
     proUsers(item) {
-      this.getUserList({projectId: item})
+      this.loginUser.projectId = item
+      this.getUserList(this.loginUser)
     },
     chooseTag(item) {
       this.tagBtnPopover = false

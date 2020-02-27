@@ -79,8 +79,15 @@
 </template>
 
 <script>
-import { listUserByProject } from "@/api/system/user";
+import { listUserByTask } from "@/api/system/user";
+import {mapGetters} from "vuex";
 export default {
+  computed: {
+    ...mapGetters([
+      'loginUserId',
+      'loginUserDept'
+    ]),
+  },
   props: {
     loading: {
       type: Boolean,
@@ -157,6 +164,11 @@ export default {
   name: "taskDialog",
   data() {
     return {
+      loginUser: {
+        userId: this.loginUserId,
+        deptId: this.loginUserDept,
+        projectId: null
+      },
       tagBtn: {},
       dialogDate: [],
       tagBtnPopover: false,
@@ -227,7 +239,8 @@ export default {
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
       this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
       this.resetForm("form")
-      this.getUserList(val.projectId)
+      this.loginUser.projectId = val.projectId
+      this.getUserList(this.loginUser)
       // if(val.status === undefined || val.status === null) {
       //   this.statusDropdown = this.taskStatusList.find(v => v.isDefault === 'Y')
       // } else {
@@ -242,7 +255,7 @@ export default {
   },
   methods: {
     getUserList(val) {
-      listUserByProject(val).then(response => {
+      listUserByTask(val).then(response => {
         this.userList = response.rows;
       })
     },

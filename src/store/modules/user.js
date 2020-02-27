@@ -6,6 +6,8 @@ const user = {
     token: getToken(),
     name: '',
     avatar: '',
+    loginUserId: null,
+    loginUserDept: null,
     roles: [],
     permissions: []
   },
@@ -16,6 +18,12 @@ const user = {
     },
     SET_NAME: (state, name) => {
       state.name = name
+    },
+    SET_USER_ID: (state, userid) => {
+      state.loginUserId = userid
+    },
+    SET_USER_DEPT: (state, deptid) => {
+      state.loginUserId = deptid
     },
     SET_AVATAR: (state, avatar) => {
       state.avatar = avatar
@@ -57,7 +65,10 @@ const user = {
           } else {
             commit('SET_ROLES', ['ROLE_DEFAULT'])
           }
+          console.log(user)
           commit('SET_NAME', user.username)
+          commit('SET_USER_ID', user.userId)
+          commit('SET_USER_DEPT', user.deptId)
           commit('SET_AVATAR', avatar)
           resolve(res)
         }).catch(error => {

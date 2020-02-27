@@ -193,6 +193,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { listNotice, getNotice, delNotice, addNotice, updateNotice, exportNotice } from "@/api/system/notice";
 import { listUserByProject, listUserByTask, listUserByNotice } from "@/api/system/user";
 import Editor from '@/components/Editor';
@@ -200,6 +201,11 @@ import { treeselect } from "@/api/project";
 
 export default {
   name: "Notice",
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
+  },
   components: {
     Editor
   },
@@ -211,6 +217,7 @@ export default {
         label: "label"
       },
       queryTreeParams: {
+        userId: this.loginUserId,
         projectId: null,
         taskId: null,
         noticeId: null,

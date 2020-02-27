@@ -56,14 +56,20 @@
     </el-container>
     <div slot="footer" class="dialog-footer">
       <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
-      <el-button type="success" :disabled="loading" @click="handleCancel">领取任务</el-button>
+      <el-button type="success" :disabled="loading" @click="receiveTask">领取任务</el-button>
       <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 export default {
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
+  },
   props: {
     loading: {
       type: Boolean,
@@ -190,6 +196,9 @@ export default {
     }
   },
   methods: {
+    receiveTask() {
+      console.log(this.loginUserId)
+    },
     handleCancel(){
       this.$emit('handleCancel')
     },
