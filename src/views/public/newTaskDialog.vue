@@ -2,7 +2,7 @@
   <el-dialog title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
     <el-form ref="form" :model="dialogForm" :rules="rules" label-width="80px">
       <el-form-item label="所属项目" prop="projectId">
-        <el-select v-model="dialogForm.projectId" placeholder="所属项目" clearable size="small">
+        <el-select v-model="dialogForm.projectId" placeholder="所属项目"  @change="proUsers" clearable size="small">
           <el-option
             v-for="item in projectList"
             :key="item.projectId"
@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import { listUser } from "@/api/system/user";
+import { listUserByProject } from "@/api/system/user";
 import { listProject } from "@/api/project";
 export default {
   props: {
@@ -141,7 +141,6 @@ export default {
   },
   created() {
     this.getList()
-    this.getUserList()
     this.getDicts("task_tag").then(response => {
       this.taskTag = response.data;
       this.tagBtn = this.taskTag.find(v => v.isDefault === 'Y')
@@ -171,10 +170,13 @@ export default {
         this.projectList = response.rows
       })
     },
-    getUserList() {
-      listUser().then(response => {
+    getUserList(val) {
+      listUserByProject(val).then(response => {
         this.userList = response.rows;
       })
+    },
+    proUsers(item) {
+      this.getUserList({projectId: item})
     },
     chooseTag(item) {
       this.tagBtnPopover = false

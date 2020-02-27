@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { listUser } from "@/api/system/user";
+import { listUserByProject } from "@/api/system/user";
 export default {
   props: {
     loading: {
@@ -214,7 +214,6 @@ export default {
     }
   },
   created() {
-    this.getUserList()
     this.getDicts("task_status").then(response => {
       this.taskStatusList = response.data;
     })
@@ -228,7 +227,7 @@ export default {
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
       this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
       this.resetForm("form")
-
+      this.getUserList(val.projectId)
       // if(val.status === undefined || val.status === null) {
       //   this.statusDropdown = this.taskStatusList.find(v => v.isDefault === 'Y')
       // } else {
@@ -242,8 +241,8 @@ export default {
     }
   },
   methods: {
-    getUserList() {
-      listUser().then(response => {
+    getUserList(val) {
+      listUserByProject(val).then(response => {
         this.userList = response.rows;
       })
     },
