@@ -245,7 +245,7 @@ export default {
       typeOptions: [],
       // 查询参数
       queryParams: {
-        userId: null,
+        userId: this.loginUserId,
         pageNum: 1,
         pageSize: 10,
         noticeTitle: undefined,
@@ -337,7 +337,7 @@ export default {
     /** 查询公告列表 */
     getList() {
       this.loading = true;
-      listNotice(this.loginUserId).then(response => {
+      listNotice(this.queryParams).then(response => {
         this.noticeList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -394,7 +394,7 @@ export default {
     handleUpdate(row) {
       this.reset();
       const noticeId = row.noticeId || this.ids
-      this.queryTreeParams.noticeId = noticeId[0]
+      this.queryTreeParams.noticeId = noticeId
       getNotice(noticeId).then(response => {
         this.form = response.data;
         this.open = true;
