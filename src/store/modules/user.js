@@ -23,7 +23,7 @@ const user = {
       state.loginUserId = userid
     },
     SET_USER_DEPT: (state, deptid) => {
-      state.loginUserId = deptid
+      state.loginUserDept = deptid
     },
     SET_AVATAR: (state, avatar) => {
       state.avatar = avatar
@@ -65,7 +65,6 @@ const user = {
           } else {
             commit('SET_ROLES', ['ROLE_DEFAULT'])
           }
-          console.log(user)
           commit('SET_NAME', user.username)
           commit('SET_USER_ID', user.userId)
           commit('SET_USER_DEPT', user.deptId)

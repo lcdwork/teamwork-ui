@@ -217,7 +217,6 @@ export default {
         label: "label"
       },
       queryTreeParams: {
-        userId: this.loginUserId,
         projectId: null,
         taskId: null,
         noticeId: null,
@@ -246,6 +245,7 @@ export default {
       typeOptions: [],
       // 查询参数
       queryParams: {
+        userId: null,
         pageNum: 1,
         pageSize: 10,
         noticeTitle: undefined,
@@ -337,7 +337,7 @@ export default {
     /** 查询公告列表 */
     getList() {
       this.loading = true;
-      listNotice(this.queryParams).then(response => {
+      listNotice(this.loginUserId).then(response => {
         this.noticeList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -445,6 +445,9 @@ export default {
           this.msgSuccess("删除成功");
         }).catch(function() {});
     }
+  },
+  mounted() {
+    this.queryParams.userId = this.loginUserId
   }
 };
 </script>
