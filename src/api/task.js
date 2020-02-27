@@ -10,6 +10,15 @@ export function listTask(query) {
   })
 }
 
+// 查询任务列表--By用户
+export function listTaskByUser(query) {
+  return request({
+    url: '/task/listByUser',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询任务详细
 export function getTask(taskId) {
   return request({

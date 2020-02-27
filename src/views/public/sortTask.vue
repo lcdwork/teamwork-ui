@@ -23,39 +23,13 @@ export default {
     sort1List: {
       type: Array,
       default () {
-        return [
-          {
-            id: 1,
-            value: '未完成'
-          },
-          {
-            id: 2,
-            value: '所有任务'
-          },
-          {
-            id: 3,
-            value: '已完成'
-          }
-        ]
+        return []
       }
     },
     sort2List: {
       type: Array,
       default () {
-        return [
-          {
-            id: 1,
-            value: '按任务优先级'
-          },
-          {
-            id: 2,
-            value: '按截止时间'
-          },
-          {
-            id: 3,
-            value: '按开始时间'
-          }
-        ]
+        return []
       }
     }
   },

@@ -1,44 +1,60 @@
 <template>
   <div class="app-container">
-    <span class="my-title-font">我创建的 · {{ taskNum }}</span>
-    <div style="float: right;">
-      <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
-      <el-button type="primary" size="small"  @click="newTaskWindow">新建</el-button>
-    </div>
-    <br><br>
-    <task-card-list :taskList="taskList" @showTask="showTask"></task-card-list>
-<!--    新建任务-->
-    <new-task-dialog
-      :loading="addTaskLoading"
-      :projectList="pojectList"
-      :dialogVisible.sync="newTaskDialog"
-      @handleCancel="newTaskDialog = false"
-      @handleClose="handleClose"
-      @submitForm="submitForm"/>
-<!--    编辑任务-->
-    <edit-task-dialog
+    <el-row :gutter="20">
+      <!--部门数据-->
+      <el-col :span="5" :xs="24">
+        <span class="my-title-font">所有项目 · {{ pojectList.length }}</span><br><br>
+        <div class="head-container">
+          <el-input
+            v-model="proName"
+            placeholder="请输入项目名称"
+            clearable
+            size="small"
+            prefix-icon="el-icon-search"
+            style="margin-bottom: 20px"/>
+        </div>
+        <div class="head-container">
+          <el-tree
+            :data="pojectList"
+            :props="defaultProps"
+            :expand-on-click-node="false"
+            :filter-node-method="filterNode"
+            ref="tree"
+            default-expand-all
+            @node-click="handleNodeClick"/>
+        </div>
+      </el-col>
+      <el-col :span="19" :xs="24">
+        <span class="my-title-font">任务列表 · {{ taskList.length }}</span>
+        <div style="float: right;">
+          <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
+        </div>
+        <br><br>
+        <task-card-list :taskList="taskList" @showTask="showTask"></task-card-list>
+      </el-col>
+    </el-row>
+    <!--    查看任务-->
+    <view-task-dialog
       :dialogForm="taskInfo"
-      :loading="editTaskLoading"
-      :dialogVisible.sync="editTaskDialog"
-      @handleCancel="editTaskDialog = false"
+      :loading="viewTaskLoading"
+      :dialogVisible.sync="viewTaskDialog"
+      @handleCancel="viewTaskDialog = false"
       @handleClose="handleEditClose"
       @submitForm="submitEditForm"/>
   </div>
 </template>
 
 <script>
-import newTaskDialog from '@/views/public/newTaskDialog'
-import editTaskDialog from '@/views/public/editTaskDialog'
+import viewTaskDialog from '@/views/public/viewTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
-import { addTask, listTask, updateTask } from "@/api/task"
+import { listTask, updateTask } from "@/api/task"
 import { listProject } from "@/api/project";
 let mainLoading
 export default {
   name: 'index',
   components: {
-    newTaskDialog,
-    editTaskDialog,
+    viewTaskDialog,
     sortTask,
     taskCardList
   },
@@ -46,19 +62,21 @@ export default {
     return {
       sortList:{
         status: null,
-        orderByColumn: undefined
+        orderByColumn: undefined,
+        projectId: null
       },
       taskInfo: {},
-      taskNum: 0,
-      addTaskLoading: false,
-      editTaskLoading: false,
-      newTaskDialog: false,
-      editTaskDialog: false,
-      taskDialog: false,
+      viewTaskDialog: false,
+      viewTaskLoading: false,
       taskList: [],
       pojectList: [],
       taskSort1: [],
-      taskSort2: []
+      taskSort2: [],
+      proName: null,
+      defaultProps: {
+        children: "children",
+        label: "projectName"
+      },
     }
   },
   created() {
@@ -76,13 +94,28 @@ export default {
     this.startLoading()
     this.getList(this.sortList)
     this.endLoading()
+    this.getProjectList()
+  },
+  watch: {
+    proName(val) {
+      this.$refs.tree.filter(val);
+    }
   },
   methods: {
+    // 筛选节点
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.projectName.indexOf(value) !== -1;
+    },
+    // 节点单击事件
+    handleNodeClick(item) {
+      this.sortList.projectId = item.projectId
+      this.sortList.searchValue = 2
+      this.getList(this.sortList)
+    },
     getList(val) {
       listTask(val).then(response => {
-        console.log(response)
         this.taskList = response.rows
-        this.taskNum = response.total
       }).catch(
         this.endLoading()
       )
@@ -92,62 +125,33 @@ export default {
         this.pojectList = response.rows
       })
     },
-    newTaskWindow() {
-      this.newTaskDialog = true
-    },
     showTask(item) {
       this.taskInfo = item
-      this.editTaskDialog = true
-    },
-    handleClose(done) {
-      this.$confirm('确认关闭？')
-        .then(_ => {
-          this.newTaskDialog = false
-          done()
-        })
-        .catch(_ => {})
-    },
-    submitForm(val) {
-      if(val !== null) {
-        this.addTaskLoading = true
-        addTask(val).then(response => {
-          this.addTaskLoading = false
-          if (response.code === 200) {
-            this.msgSuccess("新增成功");
-            this.getList(this.sortList)
-            this.newTaskDialog = false
-          } else {
-            this.addTaskLoading = false
-            this.msgError(response.msg);
-          }
-        }).catch(
-          this.addTaskLoading = false
-        )
-      }
+      this.viewTaskDialog = true
     },
     handleEditClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
-          this.editTaskDialog = false
+          this.viewTaskDialog = false
           done()
         })
         .catch(_ => {})
     },
     submitEditForm(val) {
       if(val !== null) {
-        this.editTaskLoading = true
+        this.viewTaskLoading = true
         updateTask(val).then(response => {
-          this.editTaskLoading = false
+          this.viewTaskLoading = false
           if (response.code === 200) {
             this.msgSuccess("编辑成功");
             this.getList(this.sortList)
-            this.editTaskDialog = false
+            this.viewTaskDialog = false
           } else {
-            this.editTaskLoading = false
+            this.viewTaskLoading = false
             this.msgError(response.msg);
           }
         }).catch(
-          this.editTaskLoading = false
+          this.viewTaskLoading = false
         )
       }
     },
@@ -182,8 +186,13 @@ export default {
 
 <style scoped>
 .my-title-font {
-  margin-left: 20px;
   font-size: 20px;
   font-weight: bold;
+}
+/deep/ .el-tree-node__content {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  cursor: pointer;
 }
 </style>

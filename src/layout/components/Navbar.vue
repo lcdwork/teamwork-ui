@@ -62,11 +62,11 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
-    <edit-task-dialog
+    <view-task-dialog
       :dialogForm="taskInfo"
-      :loading="editTaskLoading"
-      :dialogVisible.sync="editTaskDialog"
-      @handleCancel="editTaskDialog = false"
+      :loading="viewTaskLoading"
+      :dialogVisible.sync="viewTaskDialog"
+      @handleCancel="viewTaskDialog = false"
       @handleClose="handleEditClose"
       @submitForm="submitEditForm"/>
     <el-drawer :withHeader="false" :visible.sync="calDrawer" size="50%" direction="rtl">
@@ -131,7 +131,7 @@ import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import notifyDrawer from '@/views/public/notifyDrawer'
 import { listTask, updateTask } from "@/api/task"
-import editTaskDialog from '@/views/public/editTaskDialog'
+import viewTaskDialog from '@/views/public/viewTaskDialog'
 
 export default {
   components: {
@@ -141,7 +141,7 @@ export default {
     SizeSelect,
     Search,
     notifyDrawer,
-    editTaskDialog
+    viewTaskDialog
   },
   computed: {
     ...mapGetters([
@@ -164,8 +164,8 @@ export default {
   data() {
     return {
       taskInfo: {},
-      editTaskLoading: false,
-      editTaskDialog: false,
+      viewTaskLoading: false,
+      viewTaskDialog: false,
       // 搜索框
       restaurants: [],
       state: '',
@@ -267,7 +267,7 @@ export default {
     // 搜索框方法
     handleSelect(item) {
       this.taskInfo = item
-      this.editTaskDialog = true
+      this.viewTaskDialog = true
     },
     handleNotifyClose() {
       this.notifyDrawer = false
@@ -278,24 +278,24 @@ export default {
     handleEditClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
-          this.editTaskDialog = false
+          this.viewTaskDialog = false
           done()
         })
         .catch(_ => {})
     },
     submitEditForm(val) {
-      this.editTaskLoading = true
+      this.viewTaskLoading = true
       updateTask(val).then(response => {
-        this.editTaskLoading = false
+        this.viewTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("编辑成功");
-          this.editTaskDialog = false
+          this.viewTaskDialog = false
         } else {
-          this.editTaskLoading = false
+          this.viewTaskLoading = false
           this.msgError(response.msg);
         }
       }).catch(
-        this.editTaskLoading = false
+        this.viewTaskLoading = false
       )
     },
     intervalFun() {

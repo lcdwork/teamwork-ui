@@ -2,30 +2,72 @@
   <div class="dashboard-container">
     <span class="my-title-font">欢迎登陆项目管理系统</span>
     <br><br>
-    <el-row>
-<!--      新建任务-->
-<!--      <el-col :span="5">-->
-      <el-col style="width: 300px">
-        <el-card class="box-card" style="margin-left: 20px; height: 180px">
-          <div slot="header" class="clearfix">
-            <span>任务</span>
-            <el-button style="float: right; padding: 3px 0" type="text" @click="newTaskDialog = true">新增任务</el-button>
+    <el-row :gutter="40" class="panel-group">
+      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+        <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
+          <div class="card-panel-icon-wrapper icon-project">
+            <svg-icon icon-class="table" class-name="card-panel-icon" />
           </div>
-          <div class="text item">录入一个任务，设置截止时间，将自己的任务管理起来</div>
-        </el-card>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              进行中
+            </div>
+            <count-to :start-val="0" :end-val="5" :duration="2600" class="card-panel-num" />
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              项目总数
+            </div>
+            <count-to :start-val="0" :end-val="12" :duration="2600" class="card-panel-num" />
+          </div>
+        </div>
       </el-col>
-<!--      新建项目-->
-      <el-col style="width: 300px">
-        <el-card class="box-card" style="margin-left: 20px; height: 180px">
-          <div slot="header" class="clearfix">
-            <span>项目</span>
-            <el-button style="float: right; padding: 3px 0" type="text" @click="newProDialog = true">新增项目</el-button>
+      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+        <div class="card-panel" @click="handleSetLineChartData('purchases')">
+          <div class="card-panel-icon-wrapper icon-task">
+            <svg-icon icon-class="tab" class-name="card-panel-icon" />
           </div>
-          <div class="text item">录入一个项目，团队协同开发</div>
-        </el-card>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              进行中
+            </div>
+            <count-to :start-val="0" :end-val="25" :duration="3200" class="card-panel-num" />
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              任务总数
+            </div>
+            <count-to :start-val="0" :end-val="65" :duration="3200" class="card-panel-num" />
+          </div>
+        </div>
+      </el-col>
+      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+        <div class="card-panel" @click="handleSetLineChartData('shoppings')">
+          <div class="card-panel-icon-wrapper icon-email">
+            <svg-icon icon-class="email" class-name="card-panel-icon" />
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              未读通知
+            </div>
+            <count-to :start-val="0" :end-val="26" :duration="3600" class="card-panel-num" />
+          </div>
+        </div>
+      </el-col>
+      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+        <div class="card-panel" @click="handleSetLineChartData('messages')">
+          <div class="card-panel-icon-wrapper icon-message">
+            <svg-icon icon-class="message" class-name="card-panel-icon" />
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              未读消息
+            </div>
+            <count-to :start-val="0" :end-val="126" :duration="3000" class="card-panel-num" />
+          </div>
+        </div>
       </el-col>
     </el-row>
-    <br><br>
     <span class="my-title-font">正在进行的任务</span>
     <br><br>
 <!--    正在进行的任务-->
@@ -33,60 +75,38 @@
       <el-card v-for="item in taskList" :key="item.taskId" shadow="hover" @click.native="showTask(item)" class="my-card-hover">
         <span class="text item">{{ item.taskName }}</span>
         <div style="float: right;">
-          <span style="padding: 3px 10px;font-size: 13px; color: #97a8be">{{ item.stopTime }}</span>
+          <span style="padding: 3px 10px;font-size: 13px; color: #97a8be">截止时间：{{ item.stopTime }}</span>
 <!--          <el-button style="padding: 3px 0" type="text" @click="showTask(item)">查看任务</el-button>-->
         </div>
       </el-card>
     </div>
-<!--    新建任务-->
-    <new-task-dialog
-      :loading="addTaskLoading"
-      :dialogVisible.sync="newTaskDialog"
-      @handleCancel="newTaskDialog = false"
-      @handleClose="handleNewTaskClose"
-      @submitForm="submitNewTaskForm"/>
-<!--    新建项目-->
-    <new-pro-dialog
-      :loading="addProLoading"
-      :dialogVisible.sync="newProDialog"
-      @handleCancel="newProDialog = false"
-      @handleClose="handleNewProClose"
-      @submitForm="submitNewProForm"/>
 <!--    查看任务-->
-    <edit-task-dialog
+    <view-task-dialog
       :dialogForm="taskInfo"
-      :loading="editTaskLoading"
-      :dialogVisible.sync="editTaskDialog"
-      @handleCancel="editTaskDialog = false"
-      @handleClose="handleEditTaskClose"
-      @submitForm="submitEditTaskForm"/>
+      :loading="viewTaskLoading"
+      :dialogVisible.sync="viewTaskDialog"
+      @handleCancel="viewTaskDialog = false"
+      @handleClose="handleViewTaskClose"
+      @submitForm="submitViewTaskForm"/>
   </div>
 </template>
 
 <script>
-import newTaskDialog from '@/views/public/newTaskDialog'
-import newProDialog from '@/views/public/newProDialog'
-import editTaskDialog from '@/views/public/editTaskDialog'
-import { addProject } from "@/api/project";
-import { addTask, listTask, updateTask } from "@/api/task"
+import CountTo from 'vue-count-to'
+import viewTaskDialog from '@/views/public/viewTaskDialog'
+import { listTask, updateTask } from "@/api/task"
 export default {
   name: 'Dashboard',
   components: {
-    newTaskDialog,
-    newProDialog,
-    editTaskDialog
+    CountTo,
+    viewTaskDialog
   },
   data() {
     return {
       taskInfo: {},
-      addProLoading: false,
-      addTaskLoading: false,
-      editTaskLoading: false,
-      newTaskDialog: false,
-      editTaskDialog: false,
-      newProDialog: false,
+      viewTaskLoading: false,
+      viewTaskDialog: false,
       taskList: [],
-      projectList: []
     }
   },
   created() {
@@ -95,85 +115,38 @@ export default {
   methods: {
     getTaskList() {
       listTask().then(response => {
-        console.log(response.rows)
         this.taskList = response.rows
       })
     },
     showTask(item) {
       this.taskInfo = item
-      this.editTaskDialog = true
+      this.viewTaskDialog = true
     },
-    handleNewTaskClose(done) {
+    handleSetLineChartData(type) {
+      console.log(type)
+    },
+    handleViewTaskClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
-          this.newTaskDialog = false
+          this.viewTaskDialog = false
           done()
         })
         .catch(_ => {})
     },
-    submitNewTaskForm(val) {
+    submitViewTaskForm(val) {
       if(val !== null) {
-        this.addTaskLoading = true
-        addTask(val).then(response => {
-          this.addTaskLoading = true
-          if (response.code === 200) {
-            this.msgSuccess("新增成功");
-            this.newTaskDialog = false
-          } else {
-            this.addTaskLoading = false
-            this.msgError(response.msg);
-          }
-        }).catch(
-          this.addTaskLoading = false
-        )
-      }
-    },
-    handleNewProClose(done) {
-      this.$confirm('确认关闭？')
-        .then(_ => {
-          this.newProDialog = false
-          done()
-        })
-        .catch(_ => {})
-    },
-    submitNewProForm(val) {
-      if(val !== null) {
-        this.addProLoading = true
-        addProject(val).then(response => {
-          this.addProLoading = false
-          if (response.code === 200) {
-            this.msgSuccess("新增成功");
-            this.newProDialog = false
-          } else {
-            this.msgError(response.msg);
-          }
-        }).catch(
-          this.addProLoading = false
-        )
-      }
-    },
-    handleEditTaskClose(done) {
-      this.$confirm('确认关闭？')
-        .then(_ => {
-          this.editTaskDialog = false
-          done()
-        })
-        .catch(_ => {})
-    },
-    submitEditTaskForm(val) {
-      if(val !== null) {
-        this.editTaskLoading = true
+        this.viewTaskLoading = true
         updateTask(val).then(response => {
-          this.editTaskLoading = true
+          this.viewTaskLoading = true
           if (response.code === 200) {
             this.msgSuccess("编辑成功");
-            this.editTaskDialog = false
+            this.viewTaskDialog = false
           } else {
-            this.editTaskLoading = false
+            this.viewTaskLoading = false
             this.msgError(response.msg);
           }
         }).catch(
-          this.editTaskLoading = false
+          this.viewTaskLoading = false
         )
       }
     }
@@ -199,11 +172,6 @@ export default {
 .clearfix:after {
   clear: both
 }
-/*.el-tooltip__popper.is-my-style {*/
-/*  background: #303133;*/
-/*  color: #FFF;*/
-/*  margin-bottom: 24px;*/
-/*}*/
 .my-card-hover:hover {
   background: #f7f7f7;
 }
@@ -214,5 +182,112 @@ export default {
   margin-left: 20px;
   font-size: 20px;
   font-weight: bold;
+}
+.panel-group {
+  margin-top: 18px;
+
+  .card-panel-col {
+    margin-bottom: 32px;
+  }
+
+  .card-panel {
+    height: 108px;
+    cursor: pointer;
+    font-size: 12px;
+    position: relative;
+    overflow: hidden;
+    color: #666;
+    background: #fff;
+    box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
+    border-color: rgba(0, 0, 0, .05);
+
+    &:hover {
+      .card-panel-icon-wrapper {
+        color: #fff;
+      }
+
+      .icon-project {
+        background: #40c9c6;
+      }
+
+      .icon-message {
+        background: #36a3f7;
+      }
+
+      .icon-task {
+        background: #E6A23C;
+      }
+
+      .icon-email {
+        background: #34bfa3
+      }
+    }
+
+    .icon-project {
+      color: #40c9c6;
+    }
+
+    .icon-message {
+      color: #36a3f7;
+    }
+
+    .icon-task {
+      color: #E6A23C;
+    }
+
+    .icon-email {
+      color: #34bfa3
+    }
+
+    .card-panel-icon-wrapper {
+      float: left;
+      margin: 14px 0 0 14px;
+      padding: 16px;
+      transition: all 0.38s ease-out;
+      border-radius: 6px;
+    }
+
+    .card-panel-icon {
+      float: left;
+      font-size: 48px;
+    }
+
+    .card-panel-description {
+      float: right;
+      font-weight: bold;
+      margin: 26px;
+      margin-left: 0px;
+
+      .card-panel-text {
+        line-height: 18px;
+        color: rgba(0, 0, 0, 0.45);
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+
+      .card-panel-num {
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+@media (max-width:550px) {
+  .card-panel-description {
+    display: none;
+  }
+
+  .card-panel-icon-wrapper {
+    float: none !important;
+    width: 100%;
+    height: 100%;
+    margin: 0 !important;
+
+    .svg-icon {
+      display: block;
+      margin: 14px auto !important;
+      float: none !important;
+    }
+  }
 }
 </style>

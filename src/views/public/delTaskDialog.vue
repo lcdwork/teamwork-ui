@@ -5,13 +5,13 @@
         <span><i class="el-icon-s-order" />{{ dialogForm.projectName }}</span>
       </el-form-item>
       <el-form-item label="任务标题" style="margin-right: 40px">
-        <el-input disabled="disabled" v-model="dialogForm.taskName" type="textarea" :autosize="{ minRows: 1, maxRows: 2}" placeholder="任务标题" />
+        <el-input disabled="disabled" v-model="dialogForm.taskName" placeholder="任务标题" />
       </el-form-item>
       <el-form-item label="任务状态">
         <span :style="{'color': statusSpan.cssClass}" class="status-dropdown">{{statusSpan.dictLabel}}</span>
       </el-form-item>
       <el-form-item label="任务时间">
-        <el-date-picker disabled="disabled" v-model="dialogForm.taskDate" type="datetimerange" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
+        <el-date-picker disabled="disabled" v-model="taskTime" type="datetimerange" range-separator="至" start-placeholder="设置开始时间" end-placeholder="设置结束时间" align="left" />
       </el-form-item>
     </el-form>
     <div slot="footer" class="dialog-footer">
@@ -53,6 +53,7 @@ export default {
   name: "delTaskDialog",
   data() {
     return {
+      taskTime: [],
       taskStatusList: [],
       statusSpan: null,
     }
@@ -64,6 +65,7 @@ export default {
   },
   watch: {
     dialogForm(val) {
+      this.taskTime = [val.startTime, val.stopTime]
       this.statusSpan = this.taskStatusList.find(v => v.dictKey === val.status)
     }
   },

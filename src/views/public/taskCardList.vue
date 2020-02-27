@@ -6,7 +6,7 @@
       </el-tag>
       <span class="text item" style="margin-left: 10px">{{ item.taskName }}</span>
       <div style="float: right;">
-        <span class="span-card-list">截至时间：{{ item.stopTime }}</span>
+        <span class="span-card-list">截止时间：{{ item.stopTime }}</span>
       </div>
       <div style="margin-top: 5px; margin-left: 50px">
         <span class="span-card-list"><i class="el-icon-s-claim" style="color: #20a0ff"></i>任务</span>
@@ -56,6 +56,9 @@ export default {
 <style scoped>
 .my-mouse-link {
   cursor: pointer;
+}
+.my-card-hover:hover {
+  background: #f7f7f7;
 }
 .span-card-list {
   color: #8c8c8c;

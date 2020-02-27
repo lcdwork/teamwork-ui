@@ -13,10 +13,13 @@
       @handleClose="handleClose"
       @submitForm="submitForm"/>
     <el-col v-for="item in projectList" :key="item.id" style="width: 300px;margin-top: 20px">
-      <el-card class="box-card" style="margin-left: 20px; height: 180px">
+      <el-card class="box-card my-mouse-link" style="margin-left: 20px; height: 180px" @click.native="showPro(item)">
         <div slot="header" class="clearfix">
           <span>{{ item.projectName }}</span>
-          <el-button style="float: right; padding: 3px 0" type="text" @click="projectInfo(item)">项目信息</el-button>
+          <el-tag effect="light" class="pro-tag" size="mini" :style="{'color': proStatusList.find(v => v.dictKey === item.status).cssClass}">
+            {{proStatusList.find(v => v.dictKey === item.status).dictLabel}}
+          </el-tag>
+<!--          <el-button style="float: right; padding: 3px 0" type="text" @click="showPro(item)">项目信息</el-button>-->
         </div>
         <div class="text item">{{ item.remark }}</div>
       </el-card>
@@ -45,18 +48,27 @@ export default {
       newProDialog: false,
       projectList: [],
       taskSort1: [],
-      taskSort2: []
+      taskSort2: [],
+      proStatusList: []
     }
   },
   created() {
     this.getDicts("project_sort_status").then(response => {
       this.taskSort1 = response.data;
+      var status = this.taskSort1.find(v => v.isDefault === 'Y').dictKey
+      if (status === 0) {
+        status = null
+      }
+      this.sortList.status = status
     });
     this.getDicts("project_sort_time").then(response => {
       this.taskSort2 = response.data;
     });
+    this.getDicts("project_status").then(response => {
+      this.proStatusList = response.data;
+    })
     this.startLoading()
-    this.getList(null)
+    this.getList(this.sortList)
     this.endLoading()
   },
   methods: {
@@ -66,6 +78,10 @@ export default {
       }).catch(
         this.endLoading()
       )
+    },
+    showPro(item) {
+      // this.$router.push({ path: '/manage/projectInfo', params: { projectId: item.id }});
+      this.$router.push({ name: 'project_info', params: item})
     },
     sort1Command(val) {
       if (val.dictKey === 0) {
@@ -95,10 +111,6 @@ export default {
         )
       }
     },
-    projectInfo(item) {
-      // this.$router.push({ path: '/manage/projectInfo', params: { projectId: item.id }});
-      this.$router.push({ name: 'project_info', params: item})
-    },
     startLoading() {
       mainLoading = this.$loading({
         lock: true,
@@ -122,9 +134,20 @@ export default {
 </script>
 
 <style scoped>
+.pro-tag {
+  float: right;
+  margin-top: -2px;
+  /*padding: 3px 0;*/
+}
 .my-title-font {
   margin-left: 20px;
   font-size: 20px;
   font-weight: bold;
+}
+.my-mouse-link {
+  cursor: pointer;
+}
+.my-mouse-link:hover {
+  background: #f7f7f7;
 }
 </style>

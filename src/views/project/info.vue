@@ -103,7 +103,8 @@ export default {
     return {
       sortList:{
         status: null,
-        orderByColumn: undefined
+        orderByColumn: undefined,
+        projectId: null
       },
       taskInfo: {},
       delLoading: false,
@@ -164,17 +165,14 @@ export default {
     }
   },
   created() {
-    this.getParams()
-    this.startLoading()
-    this.getTaskList(null)
-    this.endLoading()
-    this.getProjectList()
     this.getDicts("task_sort_status").then(response => {
       this.taskSort1 = response.data;
+      this.getParams()
     });
     this.getDicts("task_sort_time").then(response => {
       this.taskSort2 = response.data;
     });
+    this.getProjectList()
   },
   methods: {
     handleSizeChange(val) {
@@ -202,6 +200,15 @@ export default {
         return
       }
       this.projectInfo = routerParams
+      this.sortList.projectId = this.projectInfo.projectId
+      var status = this.taskSort1.find(v => v.isDefault === 'Y').dictKey
+      if (status === 0) {
+        status = null
+      }
+      this.sortList.status = status
+      this.startLoading()
+      this.getTaskList(this.sortList)
+      this.endLoading()
     },
     getTaskList(val) {
       listTask(val).then(response => {
