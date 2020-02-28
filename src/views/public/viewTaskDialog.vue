@@ -10,7 +10,7 @@
             <el-input disabled v-model="dialogForm.taskName" placeholder="任务标题" />
           </el-form-item>
           <el-form-item label="任务状态">
-            <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
+            <span :style="{'color': statusDropdown.cssClass === null ? '#FFFFFF' : statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
           </el-form-item>
           <el-form-item label="任务时间" prop="dialogDate">
             <el-date-picker
@@ -42,7 +42,7 @@
       <el-main>
         <div style="height: 350px; margin: -10px 0px 0px -40px">
           <el-timeline>
-            <el-timeline-item v-for="activity in activities" :type="activity.type" :key="index" placement="bottom">
+            <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>
@@ -55,8 +55,8 @@
       </el-main>
     </el-container>
     <div slot="footer" class="dialog-footer">
-      <el-button v-if="commitStatus == 2" type="success" :disabled="loading" @click="commitTask">提交任务</el-button>
-      <el-button v-else-if="commitStatus == 1" type="warning" :disabled="loading" @click="receiveTask">领取任务</el-button>
+      <el-button v-if="dialogForm.taskUserStatus == 2" type="success" :disabled="loading" @click="commitTask">提交任务</el-button>
+      <el-button v-else-if="dialogForm.taskUserStatus == 1" type="warning" :disabled="loading" @click="receiveTask">领取任务</el-button>
       <el-button :disabled="loading" @click="handleCancel" style="margin-left: 50px;">取 消</el-button>
       <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
@@ -66,12 +66,6 @@
 <script>
 export default {
   props: {
-    commitStatus: {
-      type: Number,
-      default () {
-        return 0
-      }
-    },
     loading: {
       type: Boolean,
       default () {

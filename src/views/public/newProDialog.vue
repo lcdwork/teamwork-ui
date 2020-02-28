@@ -158,6 +158,8 @@ export default {
         }
         this.proTime = []
         this.resetForm("form")
+      } else {
+        this.userPopover = false
       }
     }
   },

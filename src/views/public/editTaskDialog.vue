@@ -11,9 +11,9 @@
           </el-form-item>
           <el-form-item label="任务状态">
             <el-dropdown trigger="click" @command="statusCommand">
-              <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
+              <span :style="{'color': statusDropdown.cssClass === null ? '#FFFFFF' : statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
               <el-dropdown-menu align="center">
-                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictKey" :style="{'color': item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
+                <el-dropdown-item v-for="item in taskStatusList" :key="item.dictKey" :style="{'color': item.cssClass === null ? '#FFFFFF' : item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </el-form-item>
@@ -40,7 +40,8 @@
               <div style="text-align: right; margin: 0">
                 <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
               </div>
-              <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
+<!--              <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />-->
+              <el-avatar style="margin-bottom: -5px">{{ item.nickName }}</el-avatar>
             </el-popover>
             <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
               <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
@@ -59,7 +60,7 @@
       <el-main>
         <div style="height: 350px; margin: -10px 0px 0px -40px">
           <el-timeline>
-            <el-timeline-item v-for="activity in activities" :type="activity.type" :key="index" placement="bottom">
+            <el-timeline-item v-for="activity in activities" :type="activity.type"  placement="bottom">
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>
@@ -234,6 +235,11 @@ export default {
     })
   },
   watch: {
+    dialogVisible(val) {
+      if(val === false) {
+        this.userPopover = false
+      }
+    },
     dialogForm(val) {
       this.dialogDate = [val.startTime, val.stopTime]
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)

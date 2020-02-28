@@ -80,7 +80,6 @@ export default {
   methods: {
     getList(val) {
       listTask(val).then(response => {
-        console.log(response)
         this.taskList = response.rows
         this.taskNum = response.total
       }).catch(

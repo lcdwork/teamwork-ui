@@ -9,6 +9,7 @@
       v-model="state"
       :fetch-suggestions="querySearchAsync"
       placeholder="请输入任务名称"
+      clearable
       @select="handleSelect">
       <template slot-scope="{ item }">
         <span class="name">{{ item.taskName }}</span><br>
@@ -66,6 +67,7 @@
       :dialogForm="taskInfo"
       :loading="viewTaskLoading"
       :dialogVisible.sync="viewTaskDialog"
+      @commitTask="commitTask"
       @handleCancel="viewTaskDialog = false"
       @handleClose="handleEditClose"
       @submitForm="submitEditForm"/>
@@ -130,7 +132,7 @@ import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import notifyDrawer from '@/views/public/notifyDrawer'
-import { listTask, updateTask } from "@/api/task"
+import { listTaskByUser, updateTask, updateUserTaskStatus } from "@/api/task"
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 
 export default {
@@ -147,7 +149,8 @@ export default {
     ...mapGetters([
       'sidebar',
       'avatar',
-      'device'
+      'device',
+      'loginUserId'
     ]),
     setting: {
       get() {
@@ -258,8 +261,13 @@ export default {
     },
     // 搜索框方法
     querySearchAsync(queryString, cb) {
-      if(queryString !== undefined && queryString !== ''){
-        listTask({taskName: queryString}).then(response => {
+      var param = {
+        taskName: queryString,
+        taskUserId: this.loginUserId,
+        taskUserStatus: 0
+      }
+      if(queryString !== undefined && queryString !== '') {
+        listTaskByUser(param).then(response => {
           cb(response.rows)
         })
       }
@@ -282,6 +290,26 @@ export default {
           done()
         })
         .catch(_ => {})
+    },
+    commitTask(item) {
+      var info = {
+        userId: this.loginUserId,
+        taskId: item.taskId,
+        status: 3
+      }
+      this.viewTaskLoading = true
+      updateUserTaskStatus(info).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess("提交成功");
+          this.getList(this.sortList)
+          this.viewTaskDialog = false
+        } else {
+          this.viewTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.viewTaskLoading = false
+      )
     },
     submitEditForm(val) {
       this.viewTaskLoading = true

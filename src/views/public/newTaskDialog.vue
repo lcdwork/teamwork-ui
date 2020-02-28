@@ -36,11 +36,13 @@
           <div style="text-align: right; margin: 0">
             <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
           </div>
-          <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
+<!--          <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />-->
+          <el-avatar style="margin-bottom: -5px">{{ item.nickName }}</el-avatar>
         </el-popover>
         <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
           <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
-            <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
+<!--            <el-avatar style="margin-bottom: -5px" :src="item.avatar" />-->
+            <el-avatar style="margin-bottom: -5px">{{ item.nickName }}</el-avatar>
             <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
           </el-card>
           <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
@@ -173,6 +175,8 @@ export default {
           status: null,
         }
         this.resetForm("form")
+      } else {
+        this.userPopover = false
       }
     }
   },

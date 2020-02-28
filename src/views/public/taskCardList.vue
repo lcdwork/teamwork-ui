@@ -1,17 +1,28 @@
 <template>
   <div class="my-mouse-link">
     <el-card :body-style="{padding: '10px'}" v-for="item in taskList" :key="item.taskId" shadow="hover" @click.native="showTask(item)" class="my-card-hover">
-      <el-tag effect="light" size="mini" :style="{'color': taskStatusList.find(v => v.dictKey === item.status).cssClass}">
+      <el-tag effect="light" size="mini" :style="{'color': item.status === undefined ? '#FFFFFF' : taskStatusList.find(v => v.dictKey === item.status).cssClass}">
         {{taskStatusList.find(v => v.dictKey === item.status).dictLabel}}
       </el-tag>
       <span class="text item" style="margin-left: 10px">{{ item.taskName }}</span>
       <div style="float: right;">
         <span class="span-card-list">截止时间：{{ item.stopTime }}</span>
       </div>
-      <div style="margin-top: 5px; margin-left: 50px">
+      <div :class="showUserTaskStatus ? 'noUserStatus' : 'userStatus'">
+        <el-tag
+          v-if="showUserTaskStatus"
+          effect="light"
+          size="mini"
+          :style="{'color': item.taskUserStatus === undefined  ? '#FFFFFF' : userTaskStatusList.find(v => v.dictKey === item.taskUserStatus).cssClass, 'background-color': '#F5FFFA'}">
+          {{userTaskStatusList.find(v => v.dictKey === item.taskUserStatus).dictLabel}}
+        </el-tag>
         <span class="span-card-list"><i class="el-icon-s-claim" style="color: #20a0ff"></i>任务</span>
-        <el-tag effect="plain" size="mini" style="margin-left: 20px" :type="taskTagList.find(v => v.dictKey === item.taskTag).listClass">
-                  {{taskTagList.find(v => v.dictKey === item.taskTag).dictLabel}}
+        <el-tag
+          effect="plain"
+          size="mini"
+          style="margin-left: 20px"
+          :type="item.taskTag === undefined ? '' : taskTagList.find(v => v.dictKey === item.taskTag).listClass">
+            {{taskTagList.find(v => v.dictKey === item.taskTag).dictLabel}}
         </el-tag>
         <span class="span-card-list"><i class="el-icon-s-unfold"></i>{{ item.projectName }}</span>
         <slot :data="item"></slot>
@@ -24,6 +35,12 @@
 export default {
   name: "taskCardList",
   props: {
+    showUserTaskStatus: {
+      type: Boolean,
+      default() {
+        return false
+      }
+    },
     taskList: {
       type: Array,
       default () {
@@ -35,6 +52,7 @@ export default {
     return {
       taskTagList: [],
       taskStatusList: [],
+      userTaskStatusList: []
     }
   },
   created() {
@@ -43,6 +61,9 @@ export default {
     })
     this.getDicts("task_tag").then(response => {
       this.taskTagList = response.data;
+    })
+    this.getDicts("user_task_status").then(response => {
+      this.userTaskStatusList = response.data;
     })
   },
   methods: {
@@ -64,5 +85,12 @@ export default {
   color: #8c8c8c;
   font-size: 13px;
   margin-left: 20px;
+}
+.noUserStatus{
+  margin-top: 5px;
+}
+.userStatus {
+  margin-top: 5px;
+  margin-left: 50px
 }
 </style>

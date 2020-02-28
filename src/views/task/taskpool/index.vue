@@ -26,16 +26,12 @@
       </el-col>
       <el-col :span="19" :xs="24">
         <span class="my-title-font">任务列表 · {{ taskList.length }}</span>
-        <div style="float: right;">
-          <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
-        </div>
         <br><br>
         <task-card-list :taskList="taskList" @showTask="showTask"></task-card-list>
       </el-col>
     </el-row>
     <!--    查看任务-->
     <view-task-dialog
-      :commitStatus="1"
       :dialogForm="taskInfo"
       :loading="viewTaskLoading"
       :dialogVisible.sync="viewTaskDialog"
@@ -49,7 +45,6 @@
 <script>
 import { mapGetters } from 'vuex'
 import viewTaskDialog from '@/views/public/viewTaskDialog'
-import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { listTaskByUser, updateTask, updateUserTaskStatus } from "@/api/task"
 import { listProject } from "@/api/project";
@@ -63,13 +58,11 @@ export default {
   },
   components: {
     viewTaskDialog,
-    sortTask,
     taskCardList
   },
   data() {
     return {
       sortList:{
-        status: null,
         orderByColumn: undefined,
         projectId: null,
         taskUserStatus: null,
@@ -80,37 +73,18 @@ export default {
       viewTaskLoading: false,
       taskList: [],
       pojectList: [],
-      taskSort1: [],
-      taskSort2: [],
       proName: null,
       defaultProps: {
         children: "children",
         label: "projectName"
-      },
-      userTaskStatus: []
+      }
     }
   },
   created() {
-    this.getDicts("task_sort_status").then(response => {
-      this.taskSort1 = response.data;
-      var status = this.taskSort1.find(v => v.isDefault === 'Y').dictKey
-      if (status === 0) {
-        status = null
-      }
-      this.sortList.status = status
-    });
-    this.getDicts("task_sort_time").then(response => {
-      this.taskSort2 = response.data;
-    });
-    this.getDicts("user_task_status").then(response => {
-      this.userTaskStatus = response.data;
-      this.sortList.taskUserStatus = this.userTaskStatus.find(v => v.isDefault === 'Y').dictKey
-      this.sortList.taskUserId = this.loginUserId
-      this.getList(this.sortList)
-    });
-    this.startLoading()
-    this.endLoading()
     this.getProjectList()
+    this.sortList.taskUserStatus = 1
+    this.sortList.taskUserId = this.loginUserId
+    this.getList(this.sortList)
   },
   watch: {
     proName(val) {
@@ -131,9 +105,7 @@ export default {
     getList(val) {
       listTaskByUser(val).then(response => {
         this.taskList = response.rows
-      }).catch(
-        this.endLoading()
-      )
+      })
     },
     getProjectList() {
       listProject().then(response => {
@@ -189,17 +161,6 @@ export default {
         )
       }
     },
-    sort1Command(val) {
-      if (val.dictKey === 0) {
-        val.dictKey = null
-      }
-      this.sortList.status = val.dictKey
-      this.getList(this.sortList)
-    },
-    sort2Command(val) {
-      this.sortList.orderByColumn = val.dictValue
-      this.getList(this.sortList)
-    },
     startLoading() {
       mainLoading = this.$loading({
         lock: true,
@@ -210,10 +171,6 @@ export default {
     endLoading() {
       mainLoading.close()
     }
-  },
-  mounted() {
-    this.startLoading()
-    this.endLoading()
   }
 }
 </script>

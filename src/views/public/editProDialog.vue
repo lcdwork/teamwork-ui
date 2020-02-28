@@ -6,7 +6,7 @@
       </el-form-item>
       <el-form-item label="项目状态">
         <el-dropdown trigger="click" @command="statusCommand">
-          <span :style="{'color': statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
+          <span :style="{'color': statusDropdown.cssClass === null ? '#FFFFFF' : statusDropdown.cssClass}" class="status-dropdown">{{statusDropdown.dictLabel}}</span>
           <el-dropdown-menu align="center">
             <el-dropdown-item v-for="item in proStatusList" :key="item.dictKey" :style="{'color': item.cssClass}" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
           </el-dropdown-menu>
@@ -171,10 +171,11 @@ export default {
   watch: {
     dialogVisible(val) {
       if(val === true) {
-        console.log(this.dialogForm)
         this.dialogDate = [this.dialogForm.startDate, this.dialogForm.endDate]
         this.statusDropdown = this.proStatusList.find(v => v.dictKey === this.dialogForm.status)
         this.resetForm("form")
+      } else {
+        this.userPopover = false
       }
     }
   },

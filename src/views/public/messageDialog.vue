@@ -8,7 +8,7 @@
       <el-main>
         <div style="height: 350px; margin: -10px 0px 0px -40px">
           <el-timeline>
-            <el-timeline-item v-for="activity in activities" :type="activity.type" :key="index" placement="bottom">
+            <el-timeline-item v-for="activity in activities" :type="activity.type"  placement="bottom">
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>

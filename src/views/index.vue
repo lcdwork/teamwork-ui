@@ -86,23 +86,35 @@
       :loading="viewTaskLoading"
       :dialogVisible.sync="viewTaskDialog"
       @handleCancel="viewTaskDialog = false"
+      @commitTask="commitTask"
       @handleClose="handleViewTaskClose"
       @submitForm="submitViewTaskForm"/>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import CountTo from 'vue-count-to'
 import viewTaskDialog from '@/views/public/viewTaskDialog'
-import { listTask, updateTask } from "@/api/task"
+import { listTaskByUser, updateUserTaskStatus, updateTask } from "@/api/task"
 export default {
   name: 'Dashboard',
   components: {
     CountTo,
     viewTaskDialog
   },
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
+  },
   data() {
     return {
+      sortList:{
+        orderByColumn: undefined,
+        taskUserStatus: 2,
+        taskUserId: null
+      },
       taskInfo: {},
       viewTaskLoading: false,
       viewTaskDialog: false,
@@ -110,11 +122,12 @@ export default {
     }
   },
   created() {
-    this.getTaskList()
+    this.sortList.taskUserId = this.loginUserId
+    this.getTaskList(this.sortList)
   },
   methods: {
-    getTaskList() {
-      listTask().then(response => {
+    getTaskList(val) {
+      listTaskByUser(val).then(response => {
         this.taskList = response.rows
       })
     },
@@ -132,6 +145,26 @@ export default {
           done()
         })
         .catch(_ => {})
+    },
+    commitTask(item) {
+      var info = {
+        userId: this.loginUserId,
+        taskId: item.taskId,
+        status: 3
+      }
+      this.viewTaskLoading = true
+      updateUserTaskStatus(info).then(response => {
+        if (response.code === 200) {
+          this.msgSuccess("提交成功");
+          this.getList(this.sortList)
+          this.viewTaskDialog = false
+        } else {
+          this.viewTaskLoading = false
+          this.msgError(response.msg);
+        }
+      }).catch(
+        this.viewTaskLoading = false
+      )
     },
     submitViewTaskForm(val) {
       if(val !== null) {
