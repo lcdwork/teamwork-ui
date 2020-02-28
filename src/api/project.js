@@ -10,6 +10,15 @@ export function listProject(query) {
   })
 }
 
+// 查询用户所在的项目列表
+export function listProjectByUser(query) {
+  return request({
+    url: '/project/listProjectByUser',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询项目任务下拉树结构
 export function treeselect() {
   return request({

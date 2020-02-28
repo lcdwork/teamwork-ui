@@ -6,7 +6,7 @@
         <span class="my-title-font">所有项目 · {{ pojectList.length }}</span><br><br>
         <div class="head-container">
           <el-input
-            v-model="proName"
+            v-model="queryParams.projectName"
             placeholder="请输入项目名称"
             clearable
             size="small"
@@ -47,7 +47,7 @@ import { mapGetters } from 'vuex'
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 import taskCardList from '@/views/public/taskCardList'
 import { listTaskByUser, updateTask, updateUserTaskStatus } from "@/api/task"
-import { listProject } from "@/api/project";
+import { listProject, listProjectByUser } from "@/api/project";
 let mainLoading
 export default {
   name: 'index',
@@ -62,6 +62,10 @@ export default {
   },
   data() {
     return {
+      queryParams: {
+        userId: null,
+        projectName: null
+      },
       sortList:{
         orderByColumn: undefined,
         projectId: null,
@@ -108,7 +112,8 @@ export default {
       })
     },
     getProjectList() {
-      listProject().then(response => {
+      this.queryParams.userId = this.loginUserId
+      listProjectByUser(this.queryParams).then(response => {
         this.pojectList = response.rows
       })
     },
