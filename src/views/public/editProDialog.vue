@@ -29,11 +29,13 @@
           <div style="text-align: right; margin: 0">
             <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
           </div>
-          <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
+          <el-avatar v-if="item.avatar === null || item.avatar === ''" slot="reference" style="margin: 0 5px -15px 0;font-size: 12px">{{ item.nickName }}</el-avatar>
+          <el-avatar v-else slot="reference" style="margin: 0 5px -15px 0" :src="url + item.avatar" />
         </el-popover>
         <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
           <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
-            <el-avatar style="margin-bottom: -5px" :src="item.avatar" />
+            <el-avatar v-if="item.avatar === null || item.avatar === ''" style="margin-bottom: -5px;font-size: 12px">{{ item.nickName }}</el-avatar>
+            <el-avatar v-else style="margin-bottom: -5px;" :src="url + item.avatar"/>
             <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
           </el-card>
           <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
@@ -93,6 +95,7 @@ export default {
   name: "EditProDialog",
   data() {
     return {
+      url: process.env.VUE_APP_BASE_API,
       dialogDate: [],
       userPopover: false,
       userList: [],
@@ -163,6 +166,7 @@ export default {
     }
   },
   created() {
+    console.log(process.env.VUE_APP_BASE_API)
     this.getUserList()
     this.getDicts("project_status").then(response => {
       this.proStatusList = response.data;

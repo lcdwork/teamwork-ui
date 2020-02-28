@@ -30,7 +30,8 @@
           <el-form-item label="任务人员">
             <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
               <span>联系方式：{{ item.phonenumber }}</span>
-              <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />
+              <el-avatar v-if="item.avatar === null || item.avatar === ''" slot="reference" style="margin: 0 5px -15px 0;font-size: 12px">{{ item.nickName }}</el-avatar>
+              <el-avatar v-else slot="reference" style="margin: 0 5px -15px 0" :src="url + item.avatar" />
             </el-popover>
           </el-form-item>
           <el-form-item label="任务描述" style="margin-right: 40px">
@@ -142,6 +143,7 @@ export default {
   name: "taskDialog",
   data() {
     return {
+      url: process.env.VUE_APP_BASE_API,
       tagBtn: {},
       dialogDate: [],
       taskTagList: [],
