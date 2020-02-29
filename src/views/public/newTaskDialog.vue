@@ -84,11 +84,6 @@ export default {
       getProjectUser: {
         projectId: null,
       },
-      // loginUser: {
-      //   userId: this.loginUserId,
-      //   deptId: this.loginUserDept,
-      //   projectId: null
-      // },
       tagBtn: {},
       userList: [],
       taskTag: [],
@@ -196,10 +191,6 @@ export default {
     },
     proUsers() {
       this.getProjectUser.projectId = this.dialogForm.projectId
-      // this.loginUser.projectId = item
-      // this.loginUser.userId = this.loginUserId
-      // this.loginUser.deptId = this.loginUserDept
-      // this.getUserList(this.loginUser)
     },
     chooseTag(item) {
       this.tagBtnPopover = false
