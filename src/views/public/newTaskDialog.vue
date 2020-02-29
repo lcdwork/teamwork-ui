@@ -39,7 +39,7 @@
 <!--          <el-avatar slot="reference" style="margin: 0 5px -15px 0" :src="item.avatar" />-->
           <el-avatar style="margin-bottom: -5px">{{ item.nickName }}</el-avatar>
         </el-popover>
-        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
+        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual" @click.native="getUserList">
           <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
 <!--            <el-avatar style="margin-bottom: -5px" :src="item.avatar" />-->
             <el-avatar style="margin-bottom: -5px">{{ item.nickName }}</el-avatar>
@@ -81,11 +81,14 @@ export default {
   name: "taskDialog",
   data() {
     return {
-      loginUser: {
-        userId: this.loginUserId,
-        deptId: this.loginUserDept,
-        projectId: null
+      getProjectUser: {
+        projectId: null,
       },
+      // loginUser: {
+      //   userId: this.loginUserId,
+      //   deptId: this.loginUserDept,
+      //   projectId: null
+      // },
       tagBtn: {},
       userList: [],
       taskTag: [],
@@ -186,14 +189,17 @@ export default {
         this.projectList = response.rows
       })
     },
-    getUserList(val) {
-      listUserByProject(val).then(response => {
+    getUserList() {
+      listUserByProject(this.getProjectUser).then(response => {
         this.userList = response.rows;
       })
     },
-    proUsers(item) {
-      this.loginUser.projectId = item
-      this.getUserList(this.loginUser)
+    proUsers() {
+      this.getProjectUser.projectId = this.dialogForm.projectId
+      // this.loginUser.projectId = item
+      // this.loginUser.userId = this.loginUserId
+      // this.loginUser.deptId = this.loginUserDept
+      // this.getUserList(this.loginUser)
     },
     chooseTag(item) {
       this.tagBtnPopover = false
