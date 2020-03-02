@@ -186,7 +186,13 @@ export default {
   methods: {
     getUserList() {
       listUser().then(response => {
-        this.userList = response.rows;
+        var list = response.rows
+        if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
+          this.dialogForm.userList.forEach((item) => {
+            list = list.filter(t => t.userId != item.userId)
+          })
+        }
+        this.userList = list
       })
     },
     chooseUser(item) {
@@ -202,10 +208,12 @@ export default {
         })
       } else {
         this.dialogForm.userList.push(item)
+        this.userList = this.userList.filter(t => t.userId != item.userId)
       }
     },
     removeUser(item) {
       this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
+      this.userList.push(item)
     },
     handleCancel(){
       this.$emit('handleCancel')

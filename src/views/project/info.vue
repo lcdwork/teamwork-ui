@@ -61,18 +61,33 @@
       @handleCancel="editProDialog = false"
       @handleClose="handleEditProjectClose"
       @submitForm="submitEditProjectForm"/>
-    <notify-drawer drawerTitle="操作历史" :drawerVisible="historyDrawer" @handleClose="handleHistoryClose">
-      <el-timeline class="demo-drawer__timeline" :style="{'height': drawerHeight + 'px'}">
-        <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
-          <el-card :body-style="{padding: '0px'}" shadow="hover">
-            <div style="margin-left: 10px">
-              <h4>{{activity.content}}</h4>
-              <p>{{activity.name}} 提交于 {{activity.timestamp}}</p>
-            </div>
-          </el-card>
-        </el-timeline-item>
-      </el-timeline>
-    </notify-drawer>
+    <el-drawer :withHeader="false" :visible.sync="historyDrawer" direction="rtl" :before-close="handleHistoryClose" custom-class="demo-drawer">
+      <div class="demo-drawer__content">
+        <div class="demo-drawer__header">
+          <span style="outline: none;" role="heading" tabindex="0">操作历史</span>
+        </div>
+        <el-timeline class="demo-drawer__timeline" :style="{'height': drawerHeight + 'px'}">
+          <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
+            <el-card :body-style="{padding: '0px'}" shadow="hover">
+              <div style="margin-left: 10px">
+                <h4>{{activity.content}}</h4>
+                <p>{{activity.name}} 提交于 {{activity.timestamp}}</p>
+              </div>
+            </el-card>
+          </el-timeline-item>
+        </el-timeline>
+        <div class="demo-drawer__footer">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-size="100"
+            layout="prev, pager, next, jumper"
+            :total="1000">
+          </el-pagination>
+        </div>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
@@ -84,7 +99,7 @@ import newTaskDialog from '@/views/public/newTaskDialog'
 import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
-import { updateProject, delProject } from "@/api/project";
+import { updateProject, delProject, getProjectLog } from "@/api/project";
 import { addTask, delTask, listTask, updateTask } from "@/api/task"
 import { listProject } from "@/api/project";
 let mainLoading
@@ -132,36 +147,12 @@ export default {
       taskSort2: [],
       taskList: [],
       pojectList: [],
-      activities: [
-        {
-          content: '活动按期开始',
-          name: '张三',
-          type: 'success',
-          timestamp: '2018-04-15'
-        }, {
-          content: '通过审核',
-          name: '张三',
-          timestamp: '2018-04-13'
-        }, {
-          content: '创建成功',
-          name: '张三',
-          timestamp: '2018-04-11'
-        },
-        {
-          content: '活动按期开始',
-          name: '张三',
-          type: 'success',
-          timestamp: '2018-04-15'
-        }, {
-          content: '通过审核',
-          name: '张三',
-          timestamp: '2018-04-13'
-        }, {
-          content: '创建成功',
-          name: '张三',
-          timestamp: '2018-04-11'
-        }
-      ]
+      activities: [],
+      activitiesSearch: {
+        pageNum: 1,
+        pageSize: 10,
+        projectId: null
+      }
     }
   },
   created() {
@@ -209,6 +200,9 @@ export default {
       this.startLoading()
       this.getTaskList(this.sortList)
       this.endLoading()
+      this.activitiesSearch.projectId = this.projectInfo.projectId
+      console.log(this.activitiesSearch)
+      this.getProjectLog()
     },
     getTaskList(val) {
       listTask(val).then(response => {
@@ -220,6 +214,12 @@ export default {
     getProjectList() {
       listProject().then(response => {
         this.pojectList = response.rows
+      })
+    },
+    getProjectLog() {
+      getProjectLog(this.activitiesSearch).then(response => {
+        this.activities = response.rows
+        console.log(response.rows)
       })
     },
     newTaskFun() {
@@ -423,5 +423,38 @@ export default {
   flex: 1;
   overflow: auto;
   overflow-x: hidden;
+}
+.demo-drawer__header {
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #72767b;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-bottom: 12px;
+  padding: 10px 10px 0;
+}
+.demo-drawer__content{
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
+}
+/*.demo-drawer__timeline{*/
+/*  padding-top: 5px;*/
+/*  flex: 1;*/
+/*  overflow: auto;*/
+/*  overflow-x: hidden;*/
+/*}*/
+::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  border-radius: 10px;
+  background-color: lightgray;
+}
+.demo-drawer__footer{
+  display: flex;
 }
 </style>

@@ -209,11 +209,11 @@ export default {
           taskList: [
             {
               id: 1,
-              taskName: '测试1'
+              taskName: '任务测试1'
             },
             {
               id: 2,
-              taskName: '测试2'
+              taskName: '任务名称长度测试121212123'
             },
             {
               id: 3,

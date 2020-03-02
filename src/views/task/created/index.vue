@@ -33,9 +33,15 @@ import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { addTask, listTask, updateTask } from "@/api/task"
 import { listProject } from "@/api/project";
+import {mapGetters} from "vuex";
 let mainLoading
 export default {
   name: 'index',
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
+  },
   components: {
     newTaskDialog,
     editTaskDialog,
@@ -45,6 +51,7 @@ export default {
   data() {
     return {
       sortList:{
+        createUserId: null,
         status: null,
         orderByColumn: undefined
       },
@@ -73,6 +80,7 @@ export default {
     this.getDicts("task_sort_time").then(response => {
       this.taskSort2 = response.data;
     });
+    this.sortList.createUserId = this.loginUserId
     this.startLoading()
     this.getList(this.sortList)
     this.endLoading()

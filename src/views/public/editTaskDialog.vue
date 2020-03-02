@@ -65,7 +65,7 @@
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>
-                  <p>{{activity.name}} 提交于 {{activity.timestamp}}</p>
+                  <p>{{activity.nickName}} 提交于 {{activity.operatetime}}</p>
                 </div>
               </el-card>
             </el-timeline-item>
@@ -81,7 +81,8 @@
 </template>
 
 <script>
-import { listUserByTask } from "@/api/system/user";
+import { listUserByProject } from "@/api/system/user";
+import { getTaskLog } from "@/api/task"
 import {mapGetters} from "vuex";
 export default {
   computed: {
@@ -103,41 +104,19 @@ export default {
         return []
       }
     },
-    activities: {
-      type: Array,
-      default () {
-        return [
-          {
-            content: '活动按期开始',
-            name: '张三',
-            type: 'success',
-            timestamp: '2018-04-15'
-          }, {
-            content: '通过审核',
-            name: '张三',
-            timestamp: '2018-04-13'
-          }, {
-            content: '创建成功',
-            name: '张三',
-            timestamp: '2018-04-11'
-          },
-          {
-            content: '活动按期开始',
-            name: '张三',
-            type: 'success',
-            timestamp: '2018-04-15'
-          }, {
-            content: '通过审核',
-            name: '张三',
-            timestamp: '2018-04-13'
-          }, {
-            content: '创建成功',
-            name: '张三',
-            timestamp: '2018-04-11'
-          }
-        ]
-      }
-    },
+    // activities: {
+    //   type: Array,
+    //   default () {
+    //     return [
+    //       {
+    //         content: '活动按期开始',
+    //         name: '张三',
+    //         type: 'success',
+    //         timestamp: '2018-04-15'
+    //       }
+    //     ]
+    //   }
+    // },
     dialogVisible: {
       type: Boolean,
       default () {
@@ -180,6 +159,7 @@ export default {
       userList: [],
       taskStatusList: [],
       statusDropdown: {},
+      activities: [],
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -243,12 +223,14 @@ export default {
       }
     },
     dialogForm(val) {
+      console.log(val)
       this.dialogDate = [val.startTime, val.stopTime]
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
       this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
       this.resetForm("form")
       this.loginUser.projectId = val.projectId
       this.getUserList(this.loginUser)
+      this.getTaskLog(val.taskId)
       // if(val.status === undefined || val.status === null) {
       //   this.statusDropdown = this.taskStatusList.find(v => v.isDefault === 'Y')
       // } else {
@@ -262,9 +244,21 @@ export default {
     }
   },
   methods: {
+    getTaskLog(val) {
+      getTaskLog(val).then(response => {
+        this.activities = response.rows
+        console.log(response.rows)
+      })
+    },
     getUserList(val) {
-      listUserByTask(val).then(response => {
-        this.userList = response.rows;
+      listUserByProject(val).then(response => {
+        var list = response.rows
+        if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
+          this.dialogForm.userList.forEach((item) => {
+            list = list.filter(t => t.userId != item.userId)
+          })
+        }
+        this.userList = list
       })
     },
     chooseTag(item) {
@@ -284,10 +278,12 @@ export default {
         })
       } else {
         this.dialogForm.userList.push(item)
+        this.userList = this.userList.filter(t => t.userId != item.userId)
       }
     },
     removeUser(item) {
       this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
+      this.userList.push(item)
       // this.userPopover = true
       // this.userPopover = false
     },

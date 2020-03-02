@@ -60,3 +60,10 @@ export function updateUserTaskStatus(data) {
     data: data
   })
 }
+
+export function getTaskLog(taskId) {
+  return request({
+    url: '/taskLog/getTaskLog/' + praseStrEmpty(taskId),
+    method: 'get'
+  })
+}

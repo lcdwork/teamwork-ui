@@ -60,3 +60,11 @@ export function delProject(projectId) {
     method: 'delete'
   })
 }
+
+export function getProjectLog(data) {
+  return request({
+    url: '/projectLog/getProjectLog',
+    method: 'get',
+    data: data
+  })
+}

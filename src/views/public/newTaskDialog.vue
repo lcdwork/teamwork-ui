@@ -39,7 +39,7 @@
           <el-avatar v-if="item.avatar === null || item.avatar === ''" slot="reference" style="margin: 0 5px -15px 0;font-size: 12px">{{ item.nickName }}</el-avatar>
           <el-avatar v-else slot="reference" style="margin: 0 5px -15px 0" :src="url + item.avatar" />
         </el-popover>
-        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual" @click.native="getUserList">
+        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
           <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
             <el-avatar v-if="item.avatar === null || item.avatar === ''" style="margin-bottom: -5px;font-size: 12px">{{ item.nickName }}</el-avatar>
             <el-avatar v-else style="margin-bottom: -5px;" :src="url + item.avatar"/>
@@ -185,13 +185,17 @@ export default {
         this.projectList = response.rows
       })
     },
-    getUserList() {
-      listUserByProject(this.getProjectUser).then(response => {
-        this.userList = response.rows;
-      })
-    },
     proUsers() {
       this.getProjectUser.projectId = this.dialogForm.projectId
+      listUserByProject(this.getProjectUser).then(response => {
+        var list = response.rows
+        if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
+          this.dialogForm.userList.forEach((item) => {
+            list = list.filter(t => t.userId != item.userId)
+          })
+        }
+        this.userList = list
+      })
     },
     chooseTag(item) {
       this.tagBtnPopover = false
@@ -207,10 +211,12 @@ export default {
         })
       } else {
         this.dialogForm.userList.push(item)
+        this.userList = this.userList.filter(t => t.userId != item.userId)
       }
     },
     removeUser(item) {
       this.dialogForm.userList = this.dialogForm.userList.filter(t => t.userId != item.userId)
+      this.userList.push(item)
     },
     handleCancel(){
       this.$emit('handleCancel')
