@@ -39,7 +39,7 @@
           <el-avatar v-if="item.avatar === null || item.avatar === ''" slot="reference" style="margin: 0 5px -15px 0;font-size: 12px">{{ item.nickName }}</el-avatar>
           <el-avatar v-else slot="reference" style="margin: 0 5px -15px 0" :src="url + item.avatar" />
         </el-popover>
-        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
+        <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual" @click.native="getUserList">
           <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
             <el-avatar v-if="item.avatar === null || item.avatar === ''" style="margin-bottom: -5px;font-size: 12px">{{ item.nickName }}</el-avatar>
             <el-avatar v-else style="margin-bottom: -5px;" :src="url + item.avatar"/>
@@ -82,10 +82,8 @@ export default {
   data() {
     return {
       url: process.env.VUE_APP_BASE_API,
-      loginUser: {
-        userId: this.loginUserId,
-        deptId: this.loginUserDept,
-        projectId: null
+      getProjectUser: {
+        projectId: null,
       },
       tagBtn: {},
       userList: [],
@@ -187,14 +185,13 @@ export default {
         this.projectList = response.rows
       })
     },
-    getUserList(val) {
-      listUserByProject(val).then(response => {
+    getUserList() {
+      listUserByProject(this.getProjectUser).then(response => {
         this.userList = response.rows;
       })
     },
-    proUsers(item) {
-      this.loginUser.projectId = item
-      this.getUserList(this.loginUser)
+    proUsers() {
+      this.getProjectUser.projectId = this.dialogForm.projectId
     },
     chooseTag(item) {
       this.tagBtnPopover = false

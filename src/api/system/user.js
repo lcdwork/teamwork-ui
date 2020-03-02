@@ -10,6 +10,15 @@ export function listUser(query) {
   })
 }
 
+// 查询同一部门下人员列表
+export function listUserByUserId(data) {
+  return request({
+    url: '/system/user/listUserByUserId',
+    method: 'get',
+    params: data
+  })
+}
+
 // 查询项目下人员列表
 export function listUserByProject(data) {
   return request({

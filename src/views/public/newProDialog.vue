@@ -46,7 +46,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getListByProjectId } from "@/api/system/user";
+import { listUserByUserId } from "@/api/system/user";
 export default {
   computed: {
     ...mapGetters([
@@ -145,7 +145,7 @@ export default {
     }
   },
   created() {
-    this.getUserList(this.loginUser)
+    this.getUserList()
     this.getDicts("project_status").then(response => {
       this.proStatusList = response.data;
     })
@@ -167,8 +167,10 @@ export default {
     }
   },
   methods: {
-    getUserList(val) {
-      getListByProjectId(val).then(response => {
+    getUserList() {
+      this.loginUser.userId = this.loginUserId
+      this.loginUser.deptId = this.loginUserDept
+      listUserByUserId(this.loginUser).then(response => {
         this.userList = response.rows;
       })
     },
