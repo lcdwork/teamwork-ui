@@ -71,20 +71,19 @@
             <el-card :body-style="{padding: '0px'}" shadow="hover">
               <div style="margin-left: 10px">
                 <h4>{{activity.content}}</h4>
-                <p>{{activity.name}} 提交于 {{activity.timestamp}}</p>
+                <p>{{activity.nickName}} 提交于 {{activity.operatetime}}</p>
               </div>
             </el-card>
           </el-timeline-item>
         </el-timeline>
         <div class="demo-drawer__footer">
-          <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page.sync="currentPage"
-            :page-size="100"
-            layout="prev, pager, next, jumper"
-            :total="1000">
-          </el-pagination>
+          <pagination
+            v-show="total>0"
+            :total="total"
+            :page.sync="activitiesSearch.pageNum"
+            :limit.sync="activitiesSearch.pageSize"
+            @pagination="getProjectLogList"
+          />
         </div>
       </div>
     </el-drawer>
@@ -92,7 +91,6 @@
 </template>
 
 <script>
-import notifyDrawer from '@/views/public/notifyDrawer'
 import editProDialog from '@/views/public/editProDialog'
 import delTaskDialog from '@/views/public/delTaskDialog'
 import newTaskDialog from '@/views/public/newTaskDialog'
@@ -111,11 +109,11 @@ export default {
     newTaskDialog,
     taskCardList,
     delTaskDialog,
-    editProDialog,
-    notifyDrawer
+    editProDialog
   },
   data() {
     return {
+      total: 0,
       sortList:{
         status: null,
         orderByColumn: undefined,
@@ -166,12 +164,6 @@ export default {
     this.getProjectList()
   },
   methods: {
-    handleSizeChange(val) {
-      console.log(`每页 ${val} 条`)
-    },
-    handleCurrentChange(val) {
-      console.log(`当前页: ${val}`)
-    },
     showTask(item) {
       this.taskInfo = item
       this.editTaskDialog = true
@@ -202,7 +194,7 @@ export default {
       this.endLoading()
       this.activitiesSearch.projectId = this.projectInfo.projectId
       console.log(this.activitiesSearch)
-      this.getProjectLog()
+      this.getProjectLogList()
     },
     getTaskList(val) {
       listTask(val).then(response => {
@@ -216,9 +208,10 @@ export default {
         this.pojectList = response.rows
       })
     },
-    getProjectLog() {
+    getProjectLogList() {
       getProjectLog(this.activitiesSearch).then(response => {
         this.activities = response.rows
+        this.total = response.total;
         console.log(response.rows)
       })
     },
@@ -456,5 +449,8 @@ export default {
 }
 .demo-drawer__footer{
   display: flex;
+}
+/deep/ .pagination-container .el-pagination{
+  position: relative;
 }
 </style>

@@ -61,10 +61,10 @@ export function delProject(projectId) {
   })
 }
 
-export function getProjectLog(data) {
+export function getProjectLog(query) {
   return request({
     url: '/projectLog/getProjectLog',
     method: 'get',
-    data: data
+    params: query
   })
 }

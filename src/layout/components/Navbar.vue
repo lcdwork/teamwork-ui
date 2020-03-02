@@ -93,34 +93,47 @@
         </template>
       </el-calendar>
     </el-drawer>
-    <notify-drawer drawerTitle="通知" :drawerVisible="notifyDrawer" @handleClose="handleNotifyClose">
-      <div class="demo-drawer__menuBar">
-        <el-dropdown trigger="click" class="notify-dropdown" @command="notifyTypeCommand">
-          <span class="el-dropdown-link"><i class="el-icon-bell"></i> {{notifyDropdown}}<i class="el-icon-arrow-down el-icon--right"/></span>
-          <el-dropdown-menu align="center">
-            <el-dropdown-item command="notread"> 查看未读通知</el-dropdown-item>
-            <el-dropdown-item command="read"> 查看已读通知</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-        <el-dropdown trigger="click" class="notify-dropdown" style="float: right" @command="notifyHandleCommand">
-          <span class="el-dropdown-link"><i class="el-icon-more"></i></span>
-          <el-dropdown-menu align="center">
-            <el-dropdown-item command="read">所有通知标记已读</el-dropdown-item>
-            <el-dropdown-item command="del"> 删除所有已读通知</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-      </div>
-      <div class="demo-drawer__timeline" :style="{'height': notifyHeight + 'px'}">
-        <el-card class="notify-card" :body-style="{padding: '5px'}" v-for="item in notifyList" :key="item.id" shadow="hover">
-          <span class="notify-title"><i class="el-icon-warning-outline"></i>{{ item.notifyType }}</span><br>
-          <div class="notify-content">
-            <span class="notify-content-info">{{ item.notifyContent }}</span>
-            <span class="notify-content-status">未读</span>
+    <el-drawer :withHeader="false" :visible.sync="notifyDrawer" direction="rtl" :before-close="handleNotifyClose" custom-class="demo-drawer">
+      <div class="demo-drawer__content">
+        <div class="demo-drawer__header">
+          <span style="outline: none;" role="heading" tabindex="0">通知</span>
+        </div>
+        <div class="demo-drawer__menuBar">
+          <el-dropdown trigger="click" class="notify-dropdown" @command="notifyTypeCommand">
+            <span class="el-dropdown-link"><i class="el-icon-bell"></i> {{notifyDropdown}}<i class="el-icon-arrow-down el-icon--right"/></span>
+            <el-dropdown-menu align="center">
+              <el-dropdown-item command="notread"> 查看未读通知</el-dropdown-item>
+              <el-dropdown-item command="read"> 查看已读通知</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          <el-dropdown trigger="click" class="notify-dropdown" style="float: right" @command="notifyHandleCommand">
+            <span class="el-dropdown-link"><i class="el-icon-more"></i></span>
+            <el-dropdown-menu align="center">
+              <el-dropdown-item command="read">所有通知标记已读</el-dropdown-item>
+              <el-dropdown-item command="del"> 删除所有已读通知</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <div class="demo-drawer__timeline" :style="{'height': notifyHeight + 'px'}">
+          <el-card class="notify-card" :body-style="{padding: '5px'}" v-for="item in notifyList" :key="item.id" shadow="hover">
+            <span class="notify-title"><i class="el-icon-warning-outline"></i>{{ item.notifyType }}</span><br>
+            <div class="notify-content">
+              <span class="notify-content-info">{{ item.notifyContent }}</span>
+              <span class="notify-content-status">未读</span>
+            </div>
+            <span class="notify-datetime">{{ item.notifyTime}}</span>
+          </el-card>
+          <div class="demo-drawer__footer">
+            <pagination
+              v-show="total>0"
+              :total="total"
+              :page.sync="notifySearch.pageNum"
+              :limit.sync="notifySearch.pageSize"
+              @pagination="getNotifyList"/>
           </div>
-          <span class="notify-datetime">{{ item.notifyTime}}</span>
-        </el-card>
+        </div>
       </div>
-    </notify-drawer>
+    </el-drawer>
   </div>
 </template>
 
@@ -131,7 +144,6 @@ import Hamburger from '@/components/Hamburger'
 import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
-import notifyDrawer from '@/views/public/notifyDrawer'
 import { listTaskByUser, updateTask, updateUserTaskStatus } from "@/api/task"
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 
@@ -142,7 +154,6 @@ export default {
     Screenfull,
     SizeSelect,
     Search,
-    notifyDrawer,
     viewTaskDialog
   },
   computed: {
@@ -166,6 +177,7 @@ export default {
   },
   data() {
     return {
+      total: 0,
       taskInfo: {},
       viewTaskLoading: false,
       viewTaskDialog: false,
@@ -178,6 +190,10 @@ export default {
       notifyHeight: null,
       notifyNum: null,
       notifyDropdown: '查看全部通知',
+      notifySearch: {
+        pageNum: 1,
+        pageSize: 10
+      },
       notifyList: [
         {
           id: 1,
@@ -335,6 +351,9 @@ export default {
       //     console.log('click')
       //   }
       // })
+    },
+    getNotifyList() {
+      //
     },
     notifyTypeCommand(val) {
       switch (val) {
@@ -563,11 +582,27 @@ export default {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
-  margin-bottom: 22px;
-  padding: 20px 20px 0;
+  margin-bottom: 12px;
+  padding: 10px 10px 0;
+}
+.demo-drawer__content{
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1;
 }
 .task-dropdown {
   color: #1989FA;
+}
+::-webkit-scrollbar-track
+{
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+  border-radius: 10px;
+  background-color: lightgray;
+}
+.demo-drawer__footer{
+  display: flex;
 }
 /deep/ .el-autocomplete {
   position: absolute;
