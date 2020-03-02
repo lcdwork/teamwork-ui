@@ -65,7 +65,7 @@
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>
-                  <p>{{activity.nickName}} 提交于 {{activity.operatetime}}</p>
+                  <p>{{activity.nickName}} 提交于 {{activity.operateTime}}</p>
                 </div>
               </el-card>
             </el-timeline-item>
@@ -166,7 +166,7 @@ export default {
           onClick(picker) {
             const end = new Date()
             const start = new Date()
-            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+            end.setTime(end.getTime() + 3600 * 1000 * 24 * 7)
             picker.$emit('pick', [start, end])
           }
         }, {
@@ -174,7 +174,7 @@ export default {
           onClick(picker) {
             const end = new Date()
             const start = new Date()
-            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+            end.setTime(end.getTime() + 3600 * 1000 * 24 * 30)
             picker.$emit('pick', [start, end])
           }
         }, {
@@ -182,7 +182,7 @@ export default {
           onClick(picker) {
             const end = new Date()
             const start = new Date()
-            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+            end.setTime(end.getTime() + 3600 * 1000 * 24 * 90)
             picker.$emit('pick', [start, end])
           }
         }]
@@ -223,14 +223,13 @@ export default {
       }
     },
     dialogForm(val) {
-      console.log(val)
       this.dialogDate = [val.startTime, val.stopTime]
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
       this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
       this.resetForm("form")
       this.loginUser.projectId = val.projectId
       this.getUserList(this.loginUser)
-      this.getTaskLog(val.taskId)
+      this.getTaskLogList(val.taskId)
       // if(val.status === undefined || val.status === null) {
       //   this.statusDropdown = this.taskStatusList.find(v => v.isDefault === 'Y')
       // } else {
@@ -244,10 +243,9 @@ export default {
     }
   },
   methods: {
-    getTaskLog(val) {
+    getTaskLogList(val) {
       getTaskLog(val).then(response => {
         this.activities = response.rows
-        console.log(response.rows)
       })
     },
     getUserList(val) {

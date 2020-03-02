@@ -71,7 +71,7 @@
             <el-card :body-style="{padding: '0px'}" shadow="hover">
               <div style="margin-left: 10px">
                 <h4>{{activity.content}}</h4>
-                <p>{{activity.nickName}} 提交于 {{activity.operatetime}}</p>
+                <p>{{activity.nickName}} 提交于 {{activity.operateTime}}</p>
               </div>
             </el-card>
           </el-timeline-item>
@@ -193,7 +193,6 @@ export default {
       this.getTaskList(this.sortList)
       this.endLoading()
       this.activitiesSearch.projectId = this.projectInfo.projectId
-      console.log(this.activitiesSearch)
       this.getProjectLogList()
     },
     getTaskList(val) {
@@ -212,7 +211,6 @@ export default {
       getProjectLog(this.activitiesSearch).then(response => {
         this.activities = response.rows
         this.total = response.total;
-        console.log(response.rows)
       })
     },
     newTaskFun() {

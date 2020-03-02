@@ -47,7 +47,7 @@
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>
-                  <p>{{activity.name}} 提交于 {{activity.timestamp}}</p>
+                  <p>{{activity.nickName}} 提交于 {{activity.operateTime}}</p>
                 </div>
               </el-card>
             </el-timeline-item>
@@ -65,6 +65,7 @@
 </template>
 
 <script>
+import { getTaskLog } from "@/api/task"
 export default {
   props: {
     loading: {
@@ -77,41 +78,6 @@ export default {
       type: Array,
       default () {
         return []
-      }
-    },
-    activities: {
-      type: Array,
-      default () {
-        return [
-          {
-            content: '活动按期开始',
-            name: '张三',
-            type: 'success',
-            timestamp: '2018-04-15'
-          }, {
-            content: '通过审核',
-            name: '张三',
-            timestamp: '2018-04-13'
-          }, {
-            content: '创建成功',
-            name: '张三',
-            timestamp: '2018-04-11'
-          },
-          {
-            content: '活动按期开始',
-            name: '张三',
-            type: 'success',
-            timestamp: '2018-04-15'
-          }, {
-            content: '通过审核',
-            name: '张三',
-            timestamp: '2018-04-13'
-          }, {
-            content: '创建成功',
-            name: '张三',
-            timestamp: '2018-04-11'
-          }
-        ]
       }
     },
     dialogVisible: {
@@ -149,6 +115,7 @@ export default {
       taskTagList: [],
       taskStatusList: [],
       statusDropdown: {},
+      activities: [],
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -191,9 +158,16 @@ export default {
       this.dialogDate = [val.startTime, val.stopTime]
       this.tagBtn = this.taskTagList.find(v => v.dictKey === val.taskTag)
       this.statusDropdown = this.taskStatusList.find(v => v.dictKey === val.status)
+      this.getTaskLogList(val.taskId)
     }
   },
   methods: {
+    getTaskLogList(val) {
+      getTaskLog(val).then(response => {
+        console.log(response.rows)
+        this.activities = response.rows
+      })
+    },
     commitTask() {
       this.$emit('commitTask', this.dialogForm)
     },
