@@ -279,8 +279,9 @@ export default {
         .catch(_ => {})
     },
     submitDelTaskForm(val) {
+      console.log(val)
       this.delTaskLoading = true
-      delTask(val.taskId).then(response => {
+      delTask(val).then(response => {
         this.delTaskLoading = false
         if (response.code === 200) {
           this.msgSuccess("删除成功");
@@ -349,7 +350,7 @@ export default {
     },
     submitProjectDelForm() {
       this.delLoading = true
-      delProject(this.projectInfo.projectId).then(response => {
+      delProject(this.projectInfo).then(response => {
         this.delLoading = false
         if (response.code === 200) {
           // this.$notify({

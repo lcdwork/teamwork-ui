@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 import { praseStrEmpty } from "@/utils/teamwork";
+import da from "element-ui/src/locale/lang/da";
 
 // 查询项目列表
 export function listProject(query) {
@@ -54,10 +55,11 @@ export function updateProject(data) {
 }
 
 // 删除项目
-export function delProject(projectId) {
+export function delProject(data) {
   return request({
-    url: '/project/' + projectId,
-    method: 'delete'
+    url: '/project',
+    method: 'delete',
+    data: data
   })
 }
 
