@@ -131,6 +131,9 @@ export default {
       var info = {
         userId: this.loginUserId,
         taskId: item.taskId,
+        taskName: item.taskName,
+        projectId: item.projectId,
+        projectName: item.projectName,
         status: 3
       }
       this.viewTaskLoading = true

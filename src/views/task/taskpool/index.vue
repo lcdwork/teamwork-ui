@@ -125,7 +125,10 @@ export default {
       var info = {
         userId: this.loginUserId,
         taskId: item.taskId,
-        status: 2
+        taskName: item.taskName,
+        projectId: item.projectId,
+        projectName: item.projectName,
+        status: 2,
       }
       updateUserTaskStatus(info).then(response => {
         if (response.code === 200) {
