@@ -81,7 +81,8 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="字典编码" align="center" prop="dictCode" />
       <el-table-column label="字典标签" align="center" prop="dictLabel" />
-      <el-table-column label="字典键值" align="center" prop="dictValue" />
+      <el-table-column label="字典键" align="center" prop="dictKey" />
+      <el-table-column label="字典值" align="center" prop="dictValue" />
       <el-table-column label="字典排序" align="center" prop="dictSort" />
       <el-table-column label="状态" align="center" prop="status" :formatter="statusFormat" />
       <el-table-column label="备注" align="center" prop="remark" :show-overflow-tooltip="true" />
@@ -124,11 +125,14 @@
         <el-form-item label="字典类型">
           <el-input v-model="form.dictType" :disabled="true" />
         </el-form-item>
+        <el-form-item label="数据键">
+          <el-input v-model="form.dictKey" placeholder="请输入数据键" />
+        </el-form-item>
+        <el-form-item label="数据值">
+          <el-input v-model="form.dictValue" placeholder="请输入数据值" />
+        </el-form-item>
         <el-form-item label="数据标签" prop="dictLabel">
           <el-input v-model="form.dictLabel" placeholder="请输入数据标签" />
-        </el-form-item>
-        <el-form-item label="数据键值" prop="dictValue">
-          <el-input v-model="form.dictValue" placeholder="请输入数据键值" />
         </el-form-item>
         <el-form-item label="显示排序" prop="dictSort">
           <el-input-number v-model="form.dictSort" controls-position="right" :min="0" />
@@ -199,9 +203,9 @@ export default {
         dictLabel: [
           { required: true, message: "数据标签不能为空", trigger: "blur" }
         ],
-        dictValue: [
-          { required: true, message: "数据键值不能为空", trigger: "blur" }
-        ],
+        // dictValue: [
+        //   { required: true, message: "数据值不能为空", trigger: "blur" }
+        // ],
         dictSort: [
           { required: true, message: "数据顺序不能为空", trigger: "blur" }
         ]
@@ -254,6 +258,7 @@ export default {
       this.form = {
         dictCode: undefined,
         dictLabel: undefined,
+        dictKey: undefined,
         dictValue: undefined,
         dictSort: 0,
         status: "0",

@@ -104,6 +104,18 @@ export const constantRoutes = [
         meta: { title: '字典数据', icon: '' }
       }
     ]
+  },
+  {
+    path: '/test',
+    component: Layout,
+    children: [
+      {
+        path: 'test',
+        component: () => import('@/views/tests/test'),
+        name: 'Test',
+        meta: { title: '测试页', icon: '' }
+      }
+    ]
   }
 ]
 
