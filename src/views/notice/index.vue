@@ -61,7 +61,7 @@
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
-          @click="handleDelete"
+          @click="handleDeleteBatch"
           v-hasPermi="['system:notice:remove']"
         >删除</el-button>
       </el-col>
@@ -194,7 +194,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { listNotice, getNotice, delNotice, addNotice, updateNotice, exportNotice } from "@/api/system/notice";
+import { listNotice, getNotice, delNotice, delNoticeBatch, addNotice, updateNotice, exportNotice } from "@/api/notice";
 import { listUserByProject, listUserByTask, listUserByNotice } from "@/api/system/user";
 import Editor from '@/components/Editor';
 import { treeselect } from "@/api/project";
@@ -211,6 +211,9 @@ export default {
   },
   data() {
     return {
+      deleteIds: {
+        noticeIds: null
+      },
       projectOptions: undefined,
       defaultProps: {
         children: "children",
@@ -431,15 +434,31 @@ export default {
         }
       });
     },
+    /** 批量删除按钮操作 */
+    handleDeleteBatch() {
+      var noticeIds = {}
+      noticeIds = this.ids
+      this.$confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(function() {
+        return delNoticeBatch(noticeIds);
+      }).then(() => {
+        this.getList();
+        this.msgSuccess("删除成功");
+      }).catch(function() {});
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const noticeIds = row.noticeId || this.ids
-      this.$confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项?', "警告", {
+      const noticeId = row.noticeId
+       // =  || this.ids
+      this.$confirm('是否确认删除公告编号为"' + noticeId + '"的数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         }).then(function() {
-          return delNotice(noticeIds);
+          return delNotice(noticeId);
         }).then(() => {
           this.getList();
           this.msgSuccess("删除成功");
