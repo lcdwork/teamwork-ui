@@ -81,10 +81,10 @@
             <div>{{ data.day.split('-').slice(2).join('-') }}</div><br>
             <div v-for="item in calendarData">
               <div v-if="(item.time).indexOf(data.day)!=-1">
-                <el-dropdown v-if="item.list.length > -1" trigger="click" @command="taskCommand">
+                <el-dropdown v-if="item.list.length > 0" trigger="click" @command="taskCommand">
                   <span class="task-dropdown">{{item.list.length}}个任务进行中</span>
                   <el-dropdown-menu align="center">
-                    <el-dropdown-item v-for="task in item.list" :key="task.id" :command="task.id"> {{ task.taskName }}</el-dropdown-item>
+                    <el-dropdown-item v-for="task in item.list" :key="task.id" :command="task"> {{ task.taskName }}</el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
               </div>
@@ -224,63 +224,26 @@ export default {
         startDate: null,
         endDate: null
       },
-      calendarData: [
-        {
-          date: '2020-02-13',
-          taskNum: 3,
-          taskList: [
-            {
-              id: 1,
-              taskName: '任务测试1'
-            },
-            {
-              id: 2,
-              taskName: '任务名称长度测试121212123'
-            },
-            {
-              id: 3,
-              taskName: '测试3'
-            }
-          ]
-        },
-        {
-          date: '2020-02-12',
-          taskNum: 2,
-          taskList: []
-        },
-        {
-          date: '2020-02-11',
-          taskNum: 5,
-          taskList: []
-        },
-        {
-          date: '2020-02-10',
-          taskNum: 6,
-          taskList: []
-        }
-      ]
+      calendarData: []
     }
   },
   methods: {
     calDrawerWindow() {
-      this.calendarSearch.startDate = '2020-03-01'
-      this.calendarSearch.endDate = '2020-03-30'
       this.calDrawer = true
       this.$nextTick(() => {
         // 点击前一个月
         let prevBtn = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(1)')
         prevBtn.addEventListener('click', () => {
-          console.log(this.calendarDate)
+          this.getListByTime(this.calendarDate)
         })
         let todayBtn = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(2)')
         todayBtn.addEventListener('click', () => {
-          console.log(this.calendarSearch)
-          this.getListByTime(this.calendarSearch)
+          this.getListByTime(this.calendarDate)
         })
         // 点击下一个月
         let nextBtn = document.querySelector('.el-calendar__button-group .el-button-group>button:nth-child(3)')
         nextBtn.addEventListener('click', () => {
-          console.log(this.calendarDate)
+          this.getListByTime(this.calendarDate)
         })
       })
     },
@@ -297,10 +260,17 @@ export default {
         })
       }
     },
-    getListByTime(val) {
-      listByTime(val).then(response => {
+    getListByTime(time) {
+      var date = new Date(time);
+      var year = date.getFullYear();
+      var month= date.getMonth()+1<10 ? "0"+(date.getMonth()+1) : date.getMonth()+1;
+      // var day=date.getDate()<10 ? "0"+date.getDate() : date.getDate();
+      var lastDay = new Date(year,date.getMonth()+1,0).getDate()
+      this.calendarSearch.startDate = year+"-"+month+"-01"
+      this.calendarSearch.endDate =  year+"-"+month+"-"+lastDay
+      console.log(this.calendarSearch)
+      listByTime(this.calendarSearch).then(response => {
         this.calendarData = response.rows
-        console.log(response.rows)
       })
     },
     // 搜索框方法
@@ -321,14 +291,6 @@ export default {
           done()
         })
         .catch(_ => {})
-    },
-    dateFormat(time) {
-      var date = new Date(time);
-      var year = date.getFullYear();
-      var month= date.getMonth()+1<10 ? "0"+(date.getMonth()+1) : date.getMonth()+1;
-      var day=date.getDate()<10 ? "0"+date.getDate() : date.getDate();
-      // 拼接
-      return year+"-"+month+"-"+day;
     },
     commitTask(item) {
       var info = {
@@ -402,7 +364,8 @@ export default {
       }
     },
     taskCommand(val) {
-      console.log(val)
+      this.taskInfo = val
+      this.viewTaskDialog = true
     },
     async logout() {
       this.$confirm('确定注销并退出系统吗？', '提示', {
@@ -418,6 +381,7 @@ export default {
   },
   mounted() {
     this.calendarSearch.taskUserId = this.loginUserId
+    this.getListByTime(this.calendarDate)
     this.intervalFun()
     setInterval(() => {
       setTimeout(() => {
