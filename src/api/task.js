@@ -69,3 +69,11 @@ export function getTaskLog(taskId) {
     method: 'get'
   })
 }
+
+export function listByTime(query) {
+  return request({
+    url: '/task/listByTime',
+    method: 'get',
+    params: query
+  })
+}
