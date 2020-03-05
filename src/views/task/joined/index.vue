@@ -21,7 +21,12 @@
             :filter-node-method="filterNode"
             ref="tree"
             default-expand-all
-            @node-click="handleNodeClick"/>
+            @node-click="handleNodeClick">
+            <span style="width:100%;" @mouseenter="treeMouseEnter(data)" @mouseleave="treeMouseLeave(data)" slot-scope="{ node, data }">
+              <span >{{ node.label }}</span>
+              <el-link v-show="data.visible" type="primary" class="tree-link" @click.stop="goGanttPage(data)" icon="el-icon-data-analysis">进度</el-link>
+            </span>
+          </el-tree>
         </div>
       </el-col>
       <el-col :span="19" :xs="24">
@@ -188,6 +193,17 @@ export default {
       this.sortList.orderByColumn = val.dictValue
       this.getList(this.sortList)
     },
+    treeMouseEnter(data) {
+      this.$set(data, 'visible', true)
+    },
+    treeMouseLeave(data) {
+      this.$set(data, 'visible', false)
+    },
+    goGanttPage(item) {
+      var data = item
+      // data.userId = this.loginUserId
+      this.$router.push({ name: 'task_gantt', params: data})
+    },
     startLoading() {
       mainLoading = this.$loading({
         lock: true,
@@ -207,11 +223,18 @@ export default {
 </script>
 
 <style scoped>
+.tree-link{
+  /*margin-top: -2px;*/
+  float: right;
+  margin-right: 20px;
+  font-size: 12px;
+}
 .my-title-font {
   font-size: 20px;
   font-weight: bold;
 }
 /deep/ .el-tree-node__content {
+  font-size: 14px;
   display: flex;
   align-items: center;
   height: 40px;

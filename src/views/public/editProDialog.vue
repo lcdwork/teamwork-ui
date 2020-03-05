@@ -228,8 +228,8 @@ export default {
           val.endDate = "";
           this.dialogForm.status = this.statusDropdown.dictKey
           if (null != this.dialogDate && '' != this.dialogDate) {
-            val.startTime = this.dialogDate[0];
-            val.stopTime = this.dialogDate[1];
+            val.startDate = this.dialogDate[0];
+            val.endDate = this.dialogDate[1];
           }
           this.$emit('submitForm', val)
         } else {

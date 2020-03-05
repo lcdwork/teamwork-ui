@@ -2,27 +2,59 @@
   <div class="app-container">
     <el-page-header @back="goBack" :content="projectInfo.projectName">
     </el-page-header>
-    <div style="float: right;">
-      <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
-      <el-dropdown @command="projectCommand">
-        <span class="el-dropdown-link">项目管理<i class="el-icon-arrow-down el-icon--right"/></span>
-        <el-dropdown-menu align="center">
-          <el-dropdown-item command="add"> 新建任务</el-dropdown-item>
-          <el-dropdown-item command="edit"> 编辑项目</el-dropdown-item>
-          <el-dropdown-item command="status"> 项目进度</el-dropdown-item>
-          <el-dropdown-item command="history"> 操作记录</el-dropdown-item>
-          <el-dropdown-item style="color: #F56C6C" command="del" divided> 删除项目</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-    </div>
-    <br><br>
-    <task-card-list :taskList="taskList" @showTask="showTask">
-      <el-link type="danger" :underline="false" slot-scope="val" style="float: right; font-size: 13px" @click.stop="delTaskFun(val.data)">删除任务</el-link>
-      <!--        <el-button slot="taskCardListSlot" slot-scope="iv-tem" style="float: right; font-size: 13px">{{item.taskName}}</el-button>-->
-      <!--        <template scope="val">-->
-      <!--          {{val.data.taskName}}-->
-      <!--        </template>-->
-    </task-card-list>
+    <br>
+    <el-row :gutter="20">
+      <!--部门数据-->
+      <el-col :span="5" :xs="24">
+        <span class="my-title-font">项目人员 · {{ userList.length }}</span><br><br>
+        <div class="head-container">
+          <el-input
+            v-model="userName"
+            placeholder="请输入人员名称"
+            clearable
+            size="small"
+            prefix-icon="el-icon-search"
+            style="margin-bottom: 20px"/>
+        </div>
+        <div class="head-container">
+          <el-tree
+            :data="userList"
+            :props="defaultProps"
+            :expand-on-click-node="false"
+            :filter-node-method="filterNode"
+            ref="tree"
+            default-expand-all
+            @node-click="handleNodeClick">
+            <span style="width: 100%;" @mouseenter="treeMouseEnter(data)" @mouseleave="treeMouseLeave(data)" slot-scope="{ node, data }">
+              <el-avatar v-if="data.avatar === null || data.avatar === ''" class="user-tree-avatar" style="font-size: 12px">{{ data.nickName }}</el-avatar>
+              <el-avatar v-else class="user-tree-avatar" :src="url + data.avatar"/>
+              <span class="user-tree-name">{{ data.nickName }}</span>
+<!--              <el-link v-show="data.visible" type="primary" class="user-tree-link" :underline="false" @click.stop="goUserGanttPage(data)" icon="el-icon-data-analysis">个人进度</el-link>-->
+            </span>
+          </el-tree>
+        </div>
+      </el-col>
+      <el-col :span="19" :xs="24">
+        <span class="my-title-font">任务列表 · {{ taskList.length }}</span>
+        <div style="float: right;">
+          <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
+          <el-dropdown @command="projectCommand">
+            <span class="el-dropdown-link">项目管理<i class="el-icon-arrow-down el-icon--right"/></span>
+            <el-dropdown-menu align="center">
+              <el-dropdown-item command="add"> 新建任务</el-dropdown-item>
+              <el-dropdown-item command="edit"> 编辑项目</el-dropdown-item>
+              <el-dropdown-item command="status"> 项目进度</el-dropdown-item>
+              <el-dropdown-item command="history"> 操作记录</el-dropdown-item>
+              <el-dropdown-item style="color: #F56C6C" command="del" divided> 删除项目</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
+        <br><br>
+        <task-card-list :taskList="taskList" @showTask="showTask">
+          <el-link type="danger" :underline="false" slot-scope="val" style="float: right; font-size: 13px" @click.stop="delTaskFun(val.data)">删除任务</el-link>
+        </task-card-list>
+      </el-col>
+    </el-row>
 <!--    新增任务-->
     <new-task-dialog
       :loading="addTaskLoading"
@@ -114,27 +146,41 @@ export default {
   },
   data() {
     return {
+      // 服务端URL
+      url: process.env.VUE_APP_BASE_API,
+      // 页面高度
+      drawerHeight: null,
+      // 人员树
+      userName: null,
+      // 人员列表
+      userList: [],
+      // 人员树设置
+      defaultProps: {
+        children: "children",
+        label: "nickName"
+      },
+      // 操作记录总条数
       total: 0,
+      // 任务列表查询条件
       sortList:{
         status: null,
         orderByColumn: undefined,
         projectId: null
       },
-      taskInfo: {},
+      // Loading
       delLoading: false,
       addTaskLoading: false,
       editTaskLoading: false,
       delTaskLoading: false,
       editLoading: false,
-      currentPage: 10,
-      drawerHeight: null,
+      // 组件显示控制
       historyDrawer: false,
       editProDialog: false,
       delTaskDialog: false,
       delProDialog: false,
-      projectInfo: {},
       newTaskDialog: false,
       editTaskDialog: null,
+      // 新建任务对象
       newTaskForm: {
         projectId: null,
         projectName: null,
@@ -142,11 +188,20 @@ export default {
         taskDate: null,
         remark: null
       },
+      // 下拉
       taskSort1: [],
       taskSort2: [],
+      // 任务信息
+      taskInfo: {},
+      // 项目信息
+      projectInfo: {},
+      // 任务列表
       taskList: [],
+      // 项目列表
       pojectList: [],
+      // 操作记录列表
       activities: [],
+      // 操作记录查询条件
       activitiesSearch: {
         pageNum: 1,
         pageSize: 10,
@@ -164,18 +219,52 @@ export default {
     });
     this.getProjectList()
   },
+  watch: {
+    userName(val) {
+      this.$refs.tree.filter(val);
+    }
+  },
   methods: {
+    // 筛选节点
+    filterNode(value, data) {
+      if (!value) return true;
+      return data.nickName.indexOf(value) !== -1;
+    },
+    // 节点单击事件
+    handleNodeClick(item) {
+      console.log(item)
+      // this.sortList.userId = item.userId
+      // this.getList(this.sortList)
+    },
+    // 鼠标进入事件
+    treeMouseEnter(data) {
+      this.$set(data, 'visible', true)
+    },
+    // 鼠标离开事件
+    treeMouseLeave(data) {
+      this.$set(data, 'visible', false)
+    },
+    // 跳转人员甘特图
+    goUserGanttPage(item) {
+      var data = item
+      data.projectId = this.projectInfo.projectId
+      this.$router.push({ name: 'project_gantt', params: data})
+    },
+    // 编辑任务
     showTask(item) {
       this.taskInfo = item
       this.editTaskDialog = true
     },
+    // 删除任务
     delTaskFun(item) {
       this.taskInfo = item
       this.delTaskDialog = true
     },
+    // 返回项目列表
     goBack() {
       this.$router.push('/project/list')
     },
+    //页面初始化
     getParams() {
       var routerParams = this.$route.params
       if (routerParams.projectId === null || routerParams.projectId === undefined) {
@@ -184,6 +273,7 @@ export default {
         return
       }
       this.projectInfo = routerParams
+      this.userList = routerParams.userList
       this.sortList.projectId = this.projectInfo.projectId
       var status = this.taskSort1.find(v => v.isDefault === 'Y').dictKey
       if (status === 0) {
@@ -196,6 +286,7 @@ export default {
       this.activitiesSearch.projectId = this.projectInfo.projectId
       this.getProjectLogList()
     },
+    // 获取任务列表
     getTaskList(val) {
       listTask(val).then(response => {
         this.taskList = response.rows
@@ -203,22 +294,26 @@ export default {
         this.endLoading()
       )
     },
+    // 获取项目列表
     getProjectList() {
       listProject().then(response => {
         this.pojectList = response.rows
       })
     },
+    // 获取操作记录列表
     getProjectLogList() {
       getProjectLog(this.activitiesSearch).then(response => {
         this.activities = response.rows
         this.total = response.total;
       })
     },
+    // 新建任务初始化
     newTaskFun() {
       this.newTaskForm.projectId = this.projectInfo.projectId
       this.newTaskForm.projectName = this.projectInfo.projectName
       this.newTaskDialog = true
     },
+    // 新建任务关闭前
     handleNewTaskClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -227,6 +322,7 @@ export default {
         })
         .catch(_ => {})
     },
+    // 新建任务提交数据
     submitNewTaskForm(val) {
       if(val !== null) {
         this.addTaskLoading = true
@@ -245,6 +341,7 @@ export default {
         )
       }
     },
+    // 编辑任务关闭前
     handleEditTaskClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -253,8 +350,8 @@ export default {
         })
         .catch(_ => {})
     },
+    // 编辑任务提交
     submitEditTaskForm(val) {
-      console.log(val)
       if(val !== null) {
         this.editTaskLoading = true
         updateTask(val).then(response => {
@@ -272,6 +369,7 @@ export default {
         )
       }
     },
+    // 删除任务关闭前
     handleDelTaskClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -280,8 +378,8 @@ export default {
         })
         .catch(_ => {})
     },
+    // 删除任务提交
     submitDelTaskForm(val) {
-      console.log(val)
       this.delTaskLoading = true
       delTask(val).then(response => {
         this.delTaskLoading = false
@@ -296,6 +394,7 @@ export default {
         this.delTaskLoading = false
       )
     },
+    // 编辑项目关闭前
     handleEditProjectClose(done) {
       this.$confirm('确认关闭？')
         .then(_ => {
@@ -304,8 +403,8 @@ export default {
         })
         .catch(_ => {})
     },
+    // 编辑项目提交
     submitEditProjectForm(val) {
-      console.log(val)
       if(val !== null) {
         this.editLoading = true
         updateProject(val).then(response => {
@@ -321,6 +420,7 @@ export default {
         )
       }
     },
+    // 下拉更改
     sort1Command(val) {
       if (val.dictKey === 0) {
         val.dictKey = null
@@ -328,13 +428,16 @@ export default {
       this.sortList.status = val.dictKey
       this.getTaskList(this.sortList)
     },
+    // 下拉更改
     sort2Command(val) {
       this.sortList.orderByColumn = val.dictValue
       this.getTaskList(this.sortList)
     },
+    // 操作历史窗口
     historyWindow() {
       this.historyDrawer = true
     },
+    // 下拉选择
     projectCommand(val) {
       switch (val) {
         case 'add':
@@ -347,13 +450,14 @@ export default {
           this.editProDialog = true
           break
         case  'status':
-          this.$router.push({ name: 'gantt', params: this.projectInfo})
+          this.$router.push({ name: 'project_gantt', params: this.projectInfo})
           break
         case 'history':
           this.historyWindow()
           break
       }
     },
+    // 项目删除提交
     submitProjectDelForm() {
       this.delLoading = true
       delProject(this.projectInfo).then(response => {
@@ -383,9 +487,11 @@ export default {
       //   this.$message.error('连接超时！')
       // }, 2000)
     },
+    // 操作历史窗口关闭
     handleHistoryClose() {
       this.historyDrawer = false
     },
+    // 加载中
     startLoading() {
       mainLoading = this.$loading({
         lock: true,
@@ -393,6 +499,7 @@ export default {
         target: document.querySelector('.app-main')//设置加载动画区域
       });
     },
+    // 关闭加载状态
     endLoading() {
       mainLoading.close()
     },
@@ -455,7 +562,32 @@ export default {
 .demo-drawer__footer{
   display: flex;
 }
+.my-title-font {
+  font-size: 18px;
+  font-weight: bold;
+}
+.user-tree-avatar {
+  margin-bottom: -5px;
+}
+.user-tree-name {
+  padding: 10px;
+  top: -9px;
+  font-size: 15px;
+  color: #606266;
+  position: relative;
+}
+.user-tree-link {
+  float: right;
+  font-size: 13px;
+  padding: 12px;
+}
 /deep/ .pagination-container .el-pagination{
   position: relative;
+}
+/deep/ .el-tree-node__content {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  cursor: pointer;
 }
 </style>

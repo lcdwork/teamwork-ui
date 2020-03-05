@@ -72,8 +72,34 @@ export const constantRoutes = [
     children: [
       {
         path: 'project_info',
-        component: () => import('@/views/project/info'),
+        component: () => import('@/views/project/uInfo'),
         name: 'project_info',
+        meta: { title: '项目详情', icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/project_gantt',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'project_gantt',
+        component: () => import('@/views/project/proGantt'),
+        name: 'project_gantt',
+        meta: { title: '项目详情', icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/task_gantt',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'task_gantt',
+        component: () => import('@/views/task/joined/gantt'),
+        name: 'task_gantt',
         meta: { title: '项目详情', icon: 'user' }
       }
     ]
