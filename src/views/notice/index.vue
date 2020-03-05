@@ -19,16 +19,16 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="类型" prop="noticeType">
-        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">
-          <el-option
-            v-for="dict in typeOptions"
-            :key="dict.dictValue"
-            :label="dict.dictLabel"
-            :value="dict.dictValue"
-          />
-        </el-select>
-      </el-form-item>
+<!--      <el-form-item label="类型" prop="noticeType">-->
+<!--        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">-->
+<!--          <el-option-->
+<!--            v-for="dict in typeOptions"-->
+<!--            :key="dict.dictValue"-->
+<!--            :label="dict.dictLabel"-->
+<!--            :value="dict.dictValue"-->
+<!--          />-->
+<!--        </el-select>-->
+<!--      </el-form-item>-->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -61,7 +61,7 @@
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
-          @click="handleDelete"
+          @click="handleDeleteBatch"
           v-hasPermi="['system:notice:remove']"
         >删除</el-button>
       </el-col>
@@ -76,13 +76,13 @@
         prop="noticeTitle"
         :show-overflow-tooltip="true"
       />
-      <el-table-column
-        label="公告类型"
-        align="center"
-        prop="noticeType"
-        :formatter="typeFormat"
-        width="100"
-      />
+<!--      <el-table-column-->
+<!--        label="公告类型"-->
+<!--        align="center"-->
+<!--        prop="noticeType"-->
+<!--        :formatter="typeFormat"-->
+<!--        width="100"-->
+<!--      />-->
       <el-table-column
         label="状态"
         align="center"
@@ -128,23 +128,23 @@
     <el-dialog :title="title" :visible.sync="open" width="780px">
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
-          <el-col :span="12">
+          <el-col :span="24">
             <el-form-item label="公告标题" prop="noticeTitle">
               <el-input v-model="form.noticeTitle" placeholder="请输入公告标题" />
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="公告类型" prop="noticeType">
-              <el-select v-model="form.noticeType" placeholder="请选择">
-                <el-option
-                  v-for="dict in typeOptions"
-                  :key="dict.dictValue"
-                  :label="dict.dictLabel"
-                  :value="dict.dictValue"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
+<!--          <el-col :span="12">-->
+<!--            <el-form-item label="公告类型" prop="noticeType">-->
+<!--              <el-select v-model="form.noticeType" placeholder="请选择">-->
+<!--                <el-option-->
+<!--                  v-for="dict in typeOptions"-->
+<!--                  :key="dict.dictValue"-->
+<!--                  :label="dict.dictLabel"-->
+<!--                  :value="dict.dictValue"-->
+<!--                ></el-option>-->
+<!--              </el-select>-->
+<!--            </el-form-item>-->
+<!--          </el-col>-->
 <!--    项目任务下拉树      -->
           <el-col :span="12">
             <el-tree
@@ -194,7 +194,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { listNotice, getNotice, delNotice, addNotice, updateNotice, exportNotice } from "@/api/system/notice";
+import { listNotice, getNotice, delNotice, delNoticeBatch, addNotice, updateNotice, exportNotice } from "@/api/notice";
 import { listUserByProject, listUserByTask, listUserByNotice } from "@/api/system/user";
 import Editor from '@/components/Editor';
 import { treeselect } from "@/api/project";
@@ -211,6 +211,9 @@ export default {
   },
   data() {
     return {
+      deleteIds: {
+        noticeIds: null
+      },
       projectOptions: undefined,
       defaultProps: {
         children: "children",
@@ -259,9 +262,9 @@ export default {
         noticeTitle: [
           { required: true, message: "公告标题不能为空", trigger: "blur" }
         ],
-        noticeType: [
-          { required: true, message: "公告类型不能为空", trigger: "blur" }
-        ]
+        // noticeType: [
+        //   { required: true, message: "公告类型不能为空", trigger: "blur" }
+        // ]
       }
     };
   },
@@ -348,9 +351,9 @@ export default {
       return this.selectDictLabel(this.statusOptions, row.status);
     },
     // 公告状态字典翻译
-    typeFormat(row, column) {
-      return this.selectDictLabel(this.typeOptions, row.noticeType);
-    },
+    // typeFormat(row, column) {
+    //   return this.selectDictLabel(this.typeOptions, row.noticeType);
+    // },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -361,7 +364,7 @@ export default {
       this.form = {
         noticeId: undefined,
         noticeTitle: undefined,
-        noticeType: undefined,
+        // noticeType: undefined,
         noticeContent: undefined,
         status: "0"
       };
@@ -431,15 +434,31 @@ export default {
         }
       });
     },
+    /** 批量删除按钮操作 */
+    handleDeleteBatch() {
+      var noticeIds = {}
+      noticeIds = this.ids
+      this.$confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项?', "警告", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }).then(function() {
+        return delNoticeBatch(noticeIds);
+      }).then(() => {
+        this.getList();
+        this.msgSuccess("删除成功");
+      }).catch(function() {});
+    },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const noticeIds = row.noticeId || this.ids
-      this.$confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项?', "警告", {
+      const noticeId = row.noticeId
+       // =  || this.ids
+      this.$confirm('是否确认删除公告编号为"' + noticeId + '"的数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         }).then(function() {
-          return delNotice(noticeIds);
+          return delNotice(noticeId);
         }).then(() => {
           this.getList();
           this.msgSuccess("删除成功");
