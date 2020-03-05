@@ -201,7 +201,7 @@ export default {
     },
     goGanttPage(item) {
       var data = item
-      data.userId = this.loginUserId
+      // data.userId = this.loginUserId
       this.$router.push({ name: 'task_gantt', params: data})
     },
     startLoading() {

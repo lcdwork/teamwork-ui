@@ -67,7 +67,6 @@ export default {
     },
     getTreeData(val) {
       ganttTree(val).then(response => {
-        console.log(response.data)
         this.treeData = response.data
       })
     },

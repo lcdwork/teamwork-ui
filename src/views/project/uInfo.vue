@@ -272,7 +272,6 @@ export default {
         this.$router.push('/project/list')
         return
       }
-      console.log(routerParams)
       this.projectInfo = routerParams
       this.userList = routerParams.userList
       this.sortList.projectId = this.projectInfo.projectId
@@ -353,7 +352,6 @@ export default {
     },
     // 编辑任务提交
     submitEditTaskForm(val) {
-      console.log(val)
       if(val !== null) {
         this.editTaskLoading = true
         updateTask(val).then(response => {
@@ -382,7 +380,6 @@ export default {
     },
     // 删除任务提交
     submitDelTaskForm(val) {
-      console.log(val)
       this.delTaskLoading = true
       delTask(val).then(response => {
         this.delTaskLoading = false
@@ -408,7 +405,6 @@ export default {
     },
     // 编辑项目提交
     submitEditProjectForm(val) {
-      console.log(val)
       if(val !== null) {
         this.editLoading = true
         updateProject(val).then(response => {
