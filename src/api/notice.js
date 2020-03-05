@@ -35,6 +35,15 @@ export function updateNotice(data) {
   })
 }
 
+// 消息已读
+export function updateRead(data) {
+  return request({
+    url: '/userNotice',
+    method: 'put',
+    data: data
+  })
+}
+
 // 删除公告
 export function delNotice(noticeId) {
   return request({

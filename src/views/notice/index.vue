@@ -194,7 +194,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { listNotice, getNotice, delNotice, delNoticeBatch, addNotice, updateNotice, exportNotice } from "@/api/notice";
+import { listNotice, getNotice, delNotice, delNoticeBatch, addNotice, updateNotice, exportNotice, updateRead } from "@/api/notice";
 import { listUserByProject, listUserByTask, listUserByNotice } from "@/api/system/user";
 import Editor from '@/components/Editor';
 import { treeselect } from "@/api/project";
@@ -211,6 +211,10 @@ export default {
   },
   data() {
     return {
+      updateReadParams: {
+        userId: null,
+        noticeId: null
+      },
       editPermit: false,
       showType: false,
       deleteIds: {
@@ -414,6 +418,13 @@ export default {
       this.getTreeselect();
       this.getUserListByNotice();
       this.title = "消息详情";
+      if (row.readStatus === 1) {
+        this.updateReadParams.userId = this.loginUserId
+        this.updateReadParams.noticeId = row.noticeId
+        updateRead(this.updateReadParams).then(res => {
+          console.log(res)
+        })
+      }
       // this.reset();
       // const noticeId = row.noticeId || this.ids
       // this.queryTreeParams.noticeId = noticeId
