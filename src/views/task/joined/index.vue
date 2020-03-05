@@ -202,8 +202,7 @@ export default {
     goGanttPage(item) {
       var data = item
       data.userId = this.loginUserId
-      console.log(item)
-      this.$router.push({ name: 'gantt', params: data})
+      this.$router.push({ name: 'task_gantt', params: data})
     },
     startLoading() {
       mainLoading = this.$loading({
@@ -235,6 +234,7 @@ export default {
   font-weight: bold;
 }
 /deep/ .el-tree-node__content {
+  font-size: 14px;
   display: flex;
   align-items: center;
   height: 40px;

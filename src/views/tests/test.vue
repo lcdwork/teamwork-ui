@@ -5,8 +5,7 @@
 </template>
 
 <script>
-import { listProject } from "@/api/project";
-
+import { ganttTree } from "@/api/project";
 
 export default {
   name: "Test",
@@ -17,7 +16,7 @@ export default {
   },
   methods: {
     getList() {
-      listProject().then(response => {
+      ganttTree().then(response => {
         console.log(response)
       })
     }
