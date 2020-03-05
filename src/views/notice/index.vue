@@ -45,16 +45,16 @@
           v-hasPermi="['system:notice:add']"
         >新增</el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['system:notice:edit']"
-        >修改</el-button>
-      </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="success"-->
+<!--          icon="el-icon-edit"-->
+<!--          size="mini"-->
+<!--          :disabled="single"-->
+<!--          @click="handleUpdate"-->
+<!--          v-hasPermi="['system:notice:edit']"-->
+<!--        >修改</el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="danger"
@@ -104,7 +104,7 @@
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['system:notice:edit']"
-          >修改</el-button>
+          >详情</el-button>
           <el-button
             size="mini"
             type="text"
@@ -146,7 +146,7 @@
 <!--            </el-form-item>-->
 <!--          </el-col>-->
 <!--    项目任务下拉树      -->
-          <el-col :span="12">
+          <el-col :span="12" v-show="showType">
             <el-tree
               :data="projectOptions"
               :props="defaultProps"
@@ -158,7 +158,7 @@
               @node-click="handleNodeClick"
             />
           </el-col>
-          <el-col :span="12">
+          <el-col :span="12" v-show="showType">
             <el-table v-loading="loading" :data="userList" @selection-change="handleUserSelectionChange" v-model="form.userList">
               <el-table-column type="selection" width="40" align="center" />
               <el-table-column label="用户编号" align="center" prop="userId" />
@@ -211,6 +211,8 @@ export default {
   },
   data() {
     return {
+      editPermit: false,
+      showType: false,
       deleteIds: {
         noticeIds: null
       },
@@ -391,23 +393,45 @@ export default {
       this.reset();
       this.open = true;
       this.getTreeselect();
-      this.title = "添加公告";
+      this.showType = true;
+      this.editPermit = true;
+      this.title = "新建消息";
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset();
-      const noticeId = row.noticeId || this.ids
-      this.queryTreeParams.noticeId = noticeId
-      getNotice(noticeId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.getTreeselect();
-        this.getUserListByNotice();
-        this.title = "修改公告";
-      });
+      this.editPermit = false
+      console.log(row.createByUserId)
+      console.log(this.loginUserId)
+      if (row.createByUserId == this.loginUserId) {
+        this.editPermit = true
+      }
+      if (row.noticeType === "2") {
+        this.showType = true;
+      }
+      this.queryTreeParams.noticeId = row.noticeId
+      this.form = row;
+      this.open = true;
+      this.getTreeselect();
+      this.getUserListByNotice();
+      this.title = "消息详情";
+      // this.reset();
+      // const noticeId = row.noticeId || this.ids
+      // this.queryTreeParams.noticeId = noticeId
+      // getNotice(noticeId).then(response => {
+      //   this.form = response.data;
+      //   this.open = true;
+      //   this.getTreeselect();
+      //   this.getUserListByNotice();
+      // });
     },
     /** 提交按钮 */
     submitForm: function() {
+      console.log(this.editPermit)
+      if (this.editPermit === false) {
+        this.open = false;
+        this.getList();
+        return
+      }
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.noticeId != undefined) {
