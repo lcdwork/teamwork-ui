@@ -21,10 +21,19 @@ export function listProjectByUser(query) {
 }
 
 // 查询项目任务下拉树结构
-export function treeselect() {
+export function treeselect(query) {
   return request({
     url: '/project/treeselect',
-    method: 'get'
+    method: 'get',
+    params: query
+  })
+}
+
+export function ganttTree(data) {
+  return request({
+    url: '/project/ganttTree',
+    method: 'post',
+    data: data
   })
 }
 

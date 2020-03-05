@@ -9,6 +9,7 @@
         <el-dropdown-menu align="center">
           <el-dropdown-item command="add"> 新建任务</el-dropdown-item>
           <el-dropdown-item command="edit"> 编辑项目</el-dropdown-item>
+          <el-dropdown-item command="status"> 项目进度</el-dropdown-item>
           <el-dropdown-item command="history"> 操作记录</el-dropdown-item>
           <el-dropdown-item style="color: #F56C6C" command="del" divided> 删除项目</el-dropdown-item>
         </el-dropdown-menu>
@@ -173,7 +174,7 @@ export default {
       this.delTaskDialog = true
     },
     goBack() {
-      this.$router.go(-1)
+      this.$router.push('/project/list')
     },
     getParams() {
       var routerParams = this.$route.params
@@ -253,6 +254,7 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
+      console.log(val)
       if(val !== null) {
         this.editTaskLoading = true
         updateTask(val).then(response => {
@@ -303,6 +305,7 @@ export default {
         .catch(_ => {})
     },
     submitEditProjectForm(val) {
+      console.log(val)
       if(val !== null) {
         this.editLoading = true
         updateProject(val).then(response => {
@@ -342,6 +345,9 @@ export default {
           break
         case 'edit':
           this.editProDialog = true
+          break
+        case  'status':
+          this.$router.push({ name: 'gantt', params: this.projectInfo})
           break
         case 'history':
           this.historyWindow()
