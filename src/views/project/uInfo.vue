@@ -41,17 +41,23 @@
           <el-dropdown @command="projectCommand">
             <span class="el-dropdown-link">项目管理<i class="el-icon-arrow-down el-icon--right"/></span>
             <el-dropdown-menu align="center">
-              <el-dropdown-item command="add"> 新建任务</el-dropdown-item>
-              <el-dropdown-item command="edit"> 编辑项目</el-dropdown-item>
+              <el-dropdown-item command="add"
+                                v-hasPermi="['task:remove']"
+              > 新建任务</el-dropdown-item>
+              <el-dropdown-item command="edit"> 项目详情</el-dropdown-item>
               <el-dropdown-item command="status"> 项目进度</el-dropdown-item>
               <el-dropdown-item command="history"> 操作记录</el-dropdown-item>
-              <el-dropdown-item style="color: #F56C6C" command="del" divided> 删除项目</el-dropdown-item>
+              <el-dropdown-item style="color: #F56C6C" command="del" divided
+                                v-hasPermi="['project:remove']"
+              > 删除项目</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
         <br><br>
         <task-card-list :taskList="taskList" @showTask="showTask">
-          <el-link type="danger" :underline="false" slot-scope="val" style="float: right; font-size: 13px" @click.stop="delTaskFun(val.data)">删除任务</el-link>
+          <el-link type="danger" :underline="false" slot-scope="val" style="float: right; font-size: 13px" @click.stop="delTaskFun(val.data)"
+                   v-hasPermi="['task:remove']"
+          >删除任务</el-link>
         </task-card-list>
       </el-col>
     </el-row>

@@ -3,7 +3,13 @@
     <span class="my-title-font">项目管理 · {{projectList.length}}</span>
     <div style="float: right;">
       <sort-task :sort1List="taskSort1" :sort2List="taskSort2" @sort1Command="sort1Command" @sort2Command="sort2Command"></sort-task>
-      <el-button type="primary" size="small" style="margin-right: 20px" @click="newProDialog = true">新建</el-button>
+      <el-button
+        type="primary"
+        size="small"
+        style="margin-right: 20px"
+        @click="newProDialog = true"
+        v-hasPermi="['project:add']"
+      >新建</el-button>
     </div>
     <br><br>
     <new-pro-dialog
@@ -30,10 +36,16 @@
 <script>
 import sortTask from '@/views/public/sortTask'
 import newProDialog from '@/views/public/newProDialog'
-import { addProject, listProject } from "@/api/project";
+import { addProject, listProject, listProjectByUser } from "@/api/project";
+import {mapGetters} from "vuex";
 let mainLoading
 export default {
   name: 'index',
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
+  },
   components: {
     sortTask,
     newProDialog
@@ -42,7 +54,8 @@ export default {
     return {
       sortList:{
         status: null,
-        orderByColumn: undefined
+        orderByColumn: undefined,
+        userId: null
       },
       addLoading: false,
       newProDialog: false,
@@ -73,13 +86,16 @@ export default {
   },
   methods: {
     getList(val) {
-      listProject(val).then(response => {
+      val.userId = this.loginUserId
+      listProjectByUser(val).then(response => {
         this.projectList = response.rows
+        console.log(response)
       }).catch(
         this.endLoading()
       )
     },
     showPro(item) {
+      console.log(item)
       // this.$router.push({ path: '/manage/projectInfo', params: { projectId: item.id }});
       this.$router.push({ name: 'project_info', params: item})
     },

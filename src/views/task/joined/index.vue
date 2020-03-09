@@ -56,7 +56,7 @@ import viewTaskDialog from '@/views/public/viewTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { listTaskByUser, updateUserTaskStatus, updateTask } from "@/api/task"
-import { listProject } from "@/api/project";
+import { listProjectByUser } from "@/api/project";
 let mainLoading
 export default {
   name: 'index',
@@ -72,6 +72,9 @@ export default {
   },
   data() {
     return {
+      listProjectParams: {
+        userId: null
+      },
       sortList:{
         orderByColumn: undefined,
         projectId: null,
@@ -128,7 +131,8 @@ export default {
       )
     },
     getProjectList() {
-      listProject().then(response => {
+      this.listProjectParams.userId = this.loginUserId
+      listProjectByUser(this.listProjectParams).then(response => {
         this.pojectList = response.rows
       })
     },

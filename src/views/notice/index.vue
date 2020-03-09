@@ -19,16 +19,16 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-<!--      <el-form-item label="类型" prop="noticeType">-->
-<!--        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">-->
-<!--          <el-option-->
-<!--            v-for="dict in typeOptions"-->
-<!--            :key="dict.dictValue"-->
-<!--            :label="dict.dictLabel"-->
-<!--            :value="dict.dictValue"-->
-<!--          />-->
-<!--        </el-select>-->
-<!--      </el-form-item>-->
+      <el-form-item label="类型" prop="noticeType">
+        <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">
+          <el-option
+            v-for="dict in typeOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -42,7 +42,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:notice:add']"
+          v-hasPermi="['notice:add']"
         >新增</el-button>
       </el-col>
 <!--      <el-col :span="1.5">-->
@@ -52,7 +52,7 @@
 <!--          size="mini"-->
 <!--          :disabled="single"-->
 <!--          @click="handleUpdate"-->
-<!--          v-hasPermi="['system:notice:edit']"-->
+<!--          v-hasPermi="['notice:edit']"-->
 <!--        >修改</el-button>-->
 <!--      </el-col>-->
       <el-col :span="1.5">
@@ -62,7 +62,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDeleteBatch"
-          v-hasPermi="['system:notice:remove']"
+          v-hasPermi="['notice:remove']"
         >删除</el-button>
       </el-col>
     </el-row>
@@ -76,18 +76,18 @@
         prop="noticeTitle"
         :show-overflow-tooltip="true"
       />
-<!--      <el-table-column-->
-<!--        label="公告类型"-->
-<!--        align="center"-->
-<!--        prop="noticeType"-->
-<!--        :formatter="typeFormat"-->
-<!--        width="100"-->
-<!--      />-->
+      <el-table-column
+        label="消息类型"
+        align="center"
+        prop="noticeType"
+        :formatter="typeFormat"
+        width="100"
+      />
       <el-table-column
         label="状态"
         align="center"
-        prop="status"
-        :formatter="statusFormat"
+        prop="readStatus"
+        :formatter="readStatusFormat"
         width="100"
       />
       <el-table-column label="创建者" align="center" prop="createBy" width="100" />
@@ -103,14 +103,14 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:notice:edit']"
+            v-hasPermi="['notice:edit']"
           >详情</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:notice:remove']"
+            v-hasPermi="['notice:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -211,6 +211,9 @@ export default {
   },
   data() {
     return {
+      treeselectParams: {
+       userId: null
+      },
       updateReadParams: {
         userId: null,
         noticeId: null
@@ -252,6 +255,8 @@ export default {
       statusOptions: [],
       // 状态数据字典
       typeOptions: [],
+      // 消息读取状态字典
+      readStatusOptions: [],
       // 查询参数
       queryParams: {
         userId: this.loginUserId,
@@ -279,6 +284,9 @@ export default {
     this.getDicts("sys_notice_status").then(response => {
       this.statusOptions = response.data;
     });
+    this.getDicts("user_notice_status").then(response => {
+      this.readStatusOptions = response.data;
+    });
     this.getDicts("sys_notice_type").then(response => {
       this.typeOptions = response.data;
     });
@@ -286,7 +294,8 @@ export default {
   methods: {
     /** 查询项目任务下拉树结构 */
     getTreeselect() {
-      treeselect().then(response => {
+      this.treeselectParams.userId = this.loginUserId
+      treeselect(this.treeselectParams).then(response => {
         this.projectOptions = response.data;
       });
     },
@@ -357,9 +366,14 @@ export default {
       return this.selectDictLabel(this.statusOptions, row.status);
     },
     // 公告状态字典翻译
-    // typeFormat(row, column) {
-    //   return this.selectDictLabel(this.typeOptions, row.noticeType);
-    // },
+    typeFormat(row, column) {
+      return this.selectDictLabel(this.typeOptions, row.noticeType);
+    },
+    // 公告状态字典翻译
+    readStatusFormat(row, column) {
+      console.log(row)
+      return this.selectDictLabel(this.readStatusOptions, row.readStatus);
+    },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -370,7 +384,7 @@ export default {
       this.form = {
         noticeId: undefined,
         noticeTitle: undefined,
-        // noticeType: undefined,
+        noticeType: undefined,
         noticeContent: undefined,
         status: "0"
       };
@@ -404,25 +418,23 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.editPermit = false
-      console.log(row.createByUserId)
-      console.log(this.loginUserId)
       if (row.createByUserId == this.loginUserId) {
         this.editPermit = true
       }
       if (row.noticeType === "2") {
         this.showType = true;
+        this.getTreeselect();
       }
       this.queryTreeParams.noticeId = row.noticeId
       this.form = row;
       this.open = true;
-      this.getTreeselect();
       this.getUserListByNotice();
       this.title = "消息详情";
       if (row.readStatus === 1) {
         this.updateReadParams.userId = this.loginUserId
         this.updateReadParams.noticeId = row.noticeId
         updateRead(this.updateReadParams).then(res => {
-          console.log(res)
+          // console.log(res)
         })
       }
       // this.reset();
@@ -437,7 +449,6 @@ export default {
     },
     /** 提交按钮 */
     submitForm: function() {
-      console.log(this.editPermit)
       if (this.editPermit === false) {
         this.open = false;
         this.getList();
