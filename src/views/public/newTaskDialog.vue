@@ -54,7 +54,9 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
-      <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
+      <el-button type="primary" :loading="loading" @click="submitForm"
+                 v-hasPermi="['system:task:add']"
+      >{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
