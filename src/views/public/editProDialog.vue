@@ -47,7 +47,9 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button :disabled="loading" @click="handleCancel">取 消</el-button>
-      <el-button type="primary" :loading="loading" @click="submitForm">{{ loading ? '提交中 ...' : '确 定' }}</el-button>
+      <el-button type="primary" :loading="loading" @click="submitForm"
+                 v-hasPermi="['project:edit']"
+      >{{ loading ? '提交中 ...' : '确 定' }}</el-button>
     </div>
   </el-dialog>
 </template>
@@ -77,7 +79,7 @@ export default {
     dialogTitle: {
       type: String,
       default () {
-        return '编辑项目'
+        return '项目详情'
       }
     },
     dialogForm: {
