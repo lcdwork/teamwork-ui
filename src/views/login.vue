@@ -34,7 +34,7 @@
     </el-form>
     <!--  底部  -->
     <div class="el-login-footer">
-      <span>Copyright © 2019-2020 All Rights Reserved.</span>
+      <span>© 2019-2020 lcdong.top版权所有 ICP证:<a style="color: #909399;" href="http://www.beian.miit.gov.cn">鲁ICP备19057062号</a></span>
     </div>
   </div>
 </template>
