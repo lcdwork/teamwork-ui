@@ -371,7 +371,6 @@ export default {
     },
     // 公告状态字典翻译
     readStatusFormat(row, column) {
-      console.log(row)
       return this.selectDictLabel(this.readStatusOptions, row.readStatus);
     },
     // 取消按钮

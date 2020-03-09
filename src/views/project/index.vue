@@ -8,7 +8,7 @@
         size="small"
         style="margin-right: 20px"
         @click="newProDialog = true"
-        v-hasPermi="['project:add']"
+        v-hasPermi="['system:project:add']"
       >新建</el-button>
     </div>
     <br><br>
@@ -89,7 +89,6 @@ export default {
       val.userId = this.loginUserId
       listProjectByUser(val).then(response => {
         this.projectList = response.rows
-        console.log(response)
       }).catch(
         this.endLoading()
       )
