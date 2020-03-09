@@ -19,6 +19,15 @@ export function listUserByUserId(data) {
   })
 }
 
+// 获取人员甘特图
+export function ganttTree(data) {
+  return request({
+    url: '/system/user/ganttTree',
+    method: 'get',
+    params: data
+  })
+}
+
 // 查询项目下人员列表
 export function listUserByProject(data) {
   return request({
