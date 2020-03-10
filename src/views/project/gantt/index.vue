@@ -67,7 +67,7 @@
 <script>
   import { mapGetters } from 'vuex'
   import wlGantt from "@/views/public/projectGantt"
-  import { ganttTree,listProject } from "@/api/project";
+  import { ganttTree,listProject, userGanttTree } from "@/api/project";
   import { listUser } from "@/api/system/user"
 
   export default {
@@ -83,6 +83,10 @@
     },
     data() {
       return {
+        ganttTreeParams: {
+          userId: null,
+          deptId: null
+        },
         url: process.env.VUE_APP_BASE_API,
         // 是否显示甘特图
         visible: true,
@@ -126,11 +130,16 @@
     created() {
       this.getListProject({createUserId: this.loginUserId})
       this.getListUser({deptId: this.loginUserDept})
+      this.getTreeData()
     },
     methods: {
-      getTreeData(val) {
-        ganttTree(val).then(response => {
-          this.treeData = response.data
+      getTreeData() {
+        this.ganttTreeParams.userId = this.loginUserId
+        this.ganttTreeParams.deptId = this.loginUserDept
+        userGanttTree(this.ganttTreeParams).then(response => {
+          this.ganttInfo = response.data
+          console.log(this.ganttInfo)
+          this.treeData = response.data.list
         })
       },
       getListProject(val) {

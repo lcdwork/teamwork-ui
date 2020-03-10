@@ -37,6 +37,15 @@ export function ganttTree(data) {
   })
 }
 
+// 获取人员甘特图
+export function userGanttTree(data) {
+  return request({
+    url: '/project/userGanttTree',
+    method: 'get',
+    params: data
+  })
+}
+
 // 查询项目详细
 export function getProject(projectId) {
   return request({
