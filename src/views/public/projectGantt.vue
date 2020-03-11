@@ -796,7 +796,7 @@ export default {
       if (between) {
         return "wl-item-on";
       }
-      this.$set(row, 'background', this.randomColorList[row.id%10].dictLabel)
+      this.$set(row, 'background', this.randomColorList[row.id%10].dictValue)
       let start = dayjs(start_date).isSame(date, unit);
       let end = dayjs(end_date).isSame(date, unit);
       if (start && end) {
