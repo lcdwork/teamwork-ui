@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
-      <el-form-item label="公告标题" prop="noticeTitle">
+      <el-form-item label="消息标题" prop="noticeTitle">
         <el-input
           v-model="queryParams.noticeTitle"
           placeholder="请输入公告标题"
@@ -23,6 +23,16 @@
         <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">
           <el-option
             v-for="dict in typeOptions"
+            :key="dict.dictValue"
+            :label="dict.dictLabel"
+            :value="dict.dictValue"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="状态" prop="noticeType">
+        <el-select v-model="queryParams.readStatus" placeholder="消息状态" clearable size="small">
+          <el-option
+            v-for="dict in readStatus"
             :key="dict.dictValue"
             :label="dict.dictLabel"
             :value="dict.dictValue"
@@ -71,7 +81,7 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="序号" align="center" prop="noticeId" width="100" />
       <el-table-column
-        label="公告标题"
+        label="消息标题"
         align="center"
         prop="noticeTitle"
         :show-overflow-tooltip="true"
@@ -129,8 +139,8 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
         <el-row>
           <el-col :span="24">
-            <el-form-item label="公告标题" prop="noticeTitle">
-              <el-input v-model="form.noticeTitle" placeholder="请输入公告标题" />
+            <el-form-item label="消息标题" prop="noticeTitle">
+              <el-input v-model="form.noticeTitle" placeholder="请输入消息标题" />
             </el-form-item>
           </el-col>
 <!--          <el-col :span="12">-->
@@ -253,10 +263,10 @@ export default {
       open: false,
       // 类型数据字典
       statusOptions: [],
-      // 状态数据字典
+      // 消息类型数据字典
       typeOptions: [],
-      // 消息读取状态字典
-      readStatusOptions: [],
+      // 消息状态数据字典
+      readStatus:[],
       // 查询参数
       queryParams: {
         userId: this.loginUserId,
@@ -285,7 +295,7 @@ export default {
       this.statusOptions = response.data;
     });
     this.getDicts("user_notice_status").then(response => {
-      this.readStatusOptions = response.data;
+      this.readStatus = response.data;
     });
     this.getDicts("sys_notice_type").then(response => {
       this.typeOptions = response.data;
@@ -356,6 +366,7 @@ export default {
     getList() {
       this.loading = true;
       listNotice(this.queryParams).then(response => {
+        console.log(response)
         this.noticeList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -365,13 +376,13 @@ export default {
     statusFormat(row, column) {
       return this.selectDictLabel(this.statusOptions, row.status);
     },
-    // 公告状态字典翻译
+    // 消息类型字典翻译
     typeFormat(row, column) {
       return this.selectDictLabel(this.typeOptions, row.noticeType);
     },
     // 公告状态字典翻译
     readStatusFormat(row, column) {
-      return this.selectDictLabel(this.readStatusOptions, row.readStatus);
+      return this.selectDictLabel(this.readStatus, row.readStatus);
     },
     // 取消按钮
     cancel() {
