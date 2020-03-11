@@ -10,6 +10,32 @@ export function listUser(query) {
   })
 }
 
+// 查询团队人员列表
+export function teamUserList(data) {
+  return request({
+    url: '/system/user/teamUserList',
+    method: 'get',
+    params: data
+  })
+}
+
+// 新增团队用户
+export function addTeamUser(data) {
+  return request({
+    url: '/system/userTeam',
+    method: 'post',
+    data: data
+  })
+}
+
+// 删除团队用户
+export function delTeamUser(userId) {
+  return request({
+    url: '/system/userTeam/' + userId,
+    method: 'delete'
+  })
+}
+
 // 查询同一部门下人员列表
 export function listUserByUserId(data) {
   return request({

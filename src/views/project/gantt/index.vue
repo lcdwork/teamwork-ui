@@ -1,55 +1,9 @@
 <template>
   <div class="app-container">
-    <el-form :model="queryParams" ref="queryForm" :inline="true">
-      <el-form-item label="项目" prop="roleName">
-        <el-select
-          v-model="queryParams.projectId"
-          placeholder="项目名称"
-          clearable
-          filterable
-          size="small"
-          style="width: 240px">
-          <el-option
-            v-for="item in projectList"
-            :key="item.projectId"
-            :value="item.projectName"/>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="用户" prop="roleKey">
-        <el-select
-          v-model="queryParams.userId"
-          placeholder="用户名称"
-          clearable
-          filterable
-          size="small"
-          style="width: 240px">
-          <el-option
-            v-for="item in userList"
-            :key="item.userId"
-            :value="item.nickName">
-            <el-avatar :size="30" v-if="item.avatar === null || item.avatar === ''" style="margin-bottom: -10px;font-size: 11px">{{ item.nickName }}</el-avatar>
-            <el-avatar :size="30" v-else style="margin-bottom: -10px;" :src="url + item.avatar"/>
-            <span style="float: right;padding-right: 10px;">{{ item.nickName }}</span>
-          </el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="创建时间">
-        <el-date-picker
-          v-model="dateRange"
-          size="small"
-          style="width: 240px"
-          value-format="yyyy-MM-dd"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"/>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
-        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-      </el-form-item>
-    </el-form>
 
+    <el-page-header @back="goBack">
+    </el-page-header>
+    <br>
     <wlGantt
       v-show="visible"
       :loading="loading"
@@ -67,17 +21,10 @@
 <script>
   import { mapGetters } from 'vuex'
   import wlGantt from "@/views/public/projectGantt"
-  import { ganttTree,listProject, userGanttTree } from "@/api/project";
-  import { listUser } from "@/api/system/user"
+  import { userGanttTree } from "@/api/project";
 
   export default {
     name: "Role",
-    computed: {
-      ...mapGetters([
-        'loginUserId',
-        'loginUserDept'
-      ]),
-    },
     components: {
       wlGantt
     },
@@ -92,86 +39,40 @@
         visible: true,
         // 甘特图加载中
         loading: false,
-        // 任务列表
-        projectList: [],
-        // 人员列表
-        userList: [],
         // 时间
         dateRange: [],
-        // 遮罩层
-        loading: true,
         // 甘特图数据
         treeData: [],
         ganttInfo: {
           startDate: "",
           endDate: ""
         },
-        // 查询参数
-        queryParams: {
-          userId: undefined,
-          projectId: undefined
-        },
-        // 表单参数
-        form: {},
-        // 表单校验
-        rules: {
-          roleName: [
-            { required: true, message: "角色名称不能为空", trigger: "blur" }
-          ],
-          roleKey: [
-            { required: true, message: "权限字符不能为空", trigger: "blur" }
-          ],
-          roleSort: [
-            { required: true, message: "角色顺序不能为空", trigger: "blur" }
-          ]
-        }
       };
     },
     created() {
-      this.getListProject({createUserId: this.loginUserId})
-      this.getListUser({deptId: this.loginUserDept})
-      this.getTreeData()
+      this.getParams()
     },
     methods: {
+      goBack() {
+        this.$router.go(-1)
+      },
+      getParams() {
+        const routerParams = this.$route.params
+        if (routerParams.userId === null || routerParams.userId === undefined) {
+          this.$message.error('未获取到人员ID，返回上级页面！')
+          this.$router.go(-1)
+          return
+        }
+        this.ganttTreeParams.userId = routerParams.userId
+        this.ganttTreeParams.deptId = routerParams.deptId
+        this.getTreeData()
+      },
       getTreeData() {
-        this.ganttTreeParams.userId = this.loginUserId
-        this.ganttTreeParams.deptId = this.loginUserDept
         userGanttTree(this.ganttTreeParams).then(response => {
           this.ganttInfo = response.data
-          console.log(this.ganttInfo)
           this.treeData = response.data.list
         })
       },
-      getListProject(val) {
-        listProject(val).then(response => {
-          console.log(response)
-          this.projectList = response.rows
-        })
-      },
-      getListUser(val) {
-        listUser(val).then(response => {
-          console.log(response)
-          this.userList = response.rows
-        })
-      },
-      /** 搜索按钮操作 */
-      handleQuery() {
-        var val = this.queryParams;
-        val.startDate = "";
-        val.endDate = "";
-        if (null != this.dateRange && '' != this.dateRange) {
-          val.startDate = this.dateRange[0];
-          val.endDate = this.dateRange[1];
-        }
-        this.visible = true
-        this.queryParams.pageNum = 1;
-      },
-      /** 重置按钮操作 */
-      resetQuery() {
-        this.dateRange = [];
-        this.resetForm("queryForm");
-        this.handleQuery();
-      }
     }
   };
 </script>

@@ -92,6 +92,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/user_gantt',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'user_gantt',
+        component: () => import('@/views/project/gantt/index'),
+        name: 'user_gantt',
+        meta: { title: '人员详情', icon: 'user' }
+      }
+    ]
+  },
+  {
     path: '/task_gantt',
     component: Layout,
     hidden: true,

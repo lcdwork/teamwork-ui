@@ -15,7 +15,7 @@
           end-placeholder="设置结束时间"
           align="left" />
       </el-form-item>
-      <el-form-item label="任务人员">
+      <el-form-item label="项目人员">
         <el-popover v-for="item in dialogForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
           <span>联系方式：{{ item.phonenumber }}</span>
           <div style="text-align: right; margin: 0">
@@ -47,7 +47,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { listUserByUserId } from "@/api/system/user";
+import { listUserByUserId, teamUserList } from "@/api/system/user";
 export default {
   computed: {
     ...mapGetters([
@@ -171,7 +171,7 @@ export default {
     getUserList() {
       this.loginUser.userId = this.loginUserId
       this.loginUser.deptId = this.loginUserDept
-      listUserByUserId(this.loginUser).then(response => {
+      teamUserList(this.loginUser).then(response => {
         var list = response.rows
         if(this.dialogForm.userList === undefined || this.dialogForm.userList === null) {
           this.dialogForm.userList.forEach((item) => {
