@@ -135,65 +135,65 @@
     />
 
     <!-- 添加或修改公告对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="780px">
-      <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="消息标题" prop="noticeTitle">
-              <el-input v-model="form.noticeTitle" placeholder="请输入消息标题" />
-            </el-form-item>
-          </el-col>
-<!--          <el-col :span="12">-->
-<!--            <el-form-item label="公告类型" prop="noticeType">-->
-<!--              <el-select v-model="form.noticeType" placeholder="请选择">-->
-<!--                <el-option-->
-<!--                  v-for="dict in typeOptions"-->
-<!--                  :key="dict.dictValue"-->
-<!--                  :label="dict.dictLabel"-->
-<!--                  :value="dict.dictValue"-->
-<!--                ></el-option>-->
-<!--              </el-select>-->
-<!--            </el-form-item>-->
-<!--          </el-col>-->
-<!--    项目任务下拉树      -->
-          <el-col :span="12" v-show="showType">
+    <el-dialog :title="title" :visible.sync="open" width="80%">
+      <el-container>
+        <el-aside width="16%" style="background: #fff;">
+          <div class="head-container">
+            <el-input
+              v-model="projectName"
+              placeholder="请输入部门名称"
+              clearable
+              size="small"
+              prefix-icon="el-icon-search"
+              style="margin-bottom: 20px"/>
+          </div>
+          <div class="head-container">
             <el-tree
               :data="projectOptions"
               :props="defaultProps"
-              accordion
               :expand-on-click-node="false"
               :filter-node-method="filterNode"
               ref="tree"
               default-expand-all
-              @node-click="handleNodeClick"
-            />
-          </el-col>
-          <el-col :span="12" v-show="showType">
-            <el-table v-loading="loading" :data="userList" @selection-change="handleUserSelectionChange" v-model="form.userList">
-              <el-table-column type="selection" width="40" align="center" />
-              <el-table-column label="用户编号" align="center" prop="userId" />
-              <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />
-              <el-table-column label="用户昵称" align="center" prop="nickName" :show-overflow-tooltip="true" />
-            </el-table>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="状态">
-              <el-radio-group v-model="form.status">
-                <el-radio
-                  v-for="dict in statusOptions"
-                  :key="dict.dictValue"
-                  :label="dict.dictValue"
-                >{{dict.dictLabel}}</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item label="内容">
-              <Editor v-model="form.noticeContent" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
+              @node-click="handleNodeClick"/>
+          </div>
+        </el-aside>
+        <div style="background-color:#E6E3E3; width:1px;"></div>
+        <el-container>
+          <el-aside width="40%" style="background: #fff;">
+            <div style="height: 360px; margin: -10px -20px 0px -20px;">
+              <el-table v-loading="loading" :data="userList" @selection-change="handleUserSelectionChange" v-model="form.userList">
+                <el-table-column type="selection" width="40" align="center" />
+                <el-table-column label="用户编号" align="center" prop="userId" />
+                <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />
+                <el-table-column label="用户昵称" align="center" prop="nickName" :show-overflow-tooltip="true" />
+              </el-table>
+            </div>
+          </el-aside>
+          <div style="background-color:#E6E3E3; width:1px;"></div>
+          <el-main>
+            <div style="height: 360px; margin: -10px -20px 0px -15px;">
+              <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+                <el-form-item label="消息标题" prop="noticeTitle">
+                  <el-input v-model="form.noticeTitle" placeholder="请输入消息标题" />
+                </el-form-item>
+                <el-form-item label="状态">
+                  <el-radio-group v-model="form.status">
+                    <el-radio
+                      v-for="dict in statusOptions"
+                      :key="dict.dictValue"
+                      :label="dict.dictValue"
+                    >{{dict.dictLabel}}</el-radio>
+                  </el-radio-group>
+                </el-form-item>
+                <el-form-item label="内容">
+                  <Editor v-model="form.noticeContent" />
+                </el-form-item>
+              </el-form>
+            </div>
+          </el-main>
+        </el-container>
+      </el-container>
       <div slot="footer" class="dialog-footer" style="padding-top:20px">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
@@ -221,6 +221,7 @@ export default {
   },
   data() {
     return {
+      projectName: null,
       treeselectParams: {
        userId: null
       },
@@ -302,6 +303,12 @@ export default {
     this.getDicts("sys_notice_type").then(response => {
       this.typeOptions = response.data;
     });
+  },
+  watch: {
+    // 根据名称筛选部门树
+    projectName(val) {
+      this.$refs.tree.filter(val);
+    }
   },
   methods: {
     /** 查询项目任务下拉树结构 */
@@ -531,3 +538,12 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+/deep/ .el-tree-node__content {
+  display: flex;
+  align-items: center;
+  height: 35px;
+  cursor: pointer;
+}
+</style>

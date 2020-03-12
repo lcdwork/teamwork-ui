@@ -85,7 +85,7 @@ export const constantRoutes = [
     children: [
       {
         path: '',
-        component: () => import('@/views/team/gantt/proGantt'),
+        component: () => import('@/views/team/info/gantt'),
         name: 'project_gantt',
         meta: { title: '项目详情', icon: 'user' }
       }
@@ -98,7 +98,7 @@ export const constantRoutes = [
     children: [
       {
         path: 'user_gantt',
-        component: () => import('@/views/team/gantt/index'),
+        component: () => import('@/views/team/user/gantt'),
         name: 'user_gantt',
         meta: { title: '人员详情', icon: 'user' }
       }
@@ -114,6 +114,19 @@ export const constantRoutes = [
         component: () => import('@/views/task/joined/gantt'),
         name: 'task_gantt',
         meta: { title: '项目详情', icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/user_task',
+    component: Layout,
+    hidden: true,
+    children: [
+      {
+        path: 'list/:userId(\\d+)',
+        component: () => import('@/views/team/user/taskList'),
+        name: 'Data',
+        meta: { title: '字典数据', icon: '' }
       }
     ]
   },

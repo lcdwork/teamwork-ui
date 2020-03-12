@@ -76,21 +76,29 @@
       <el-table-column
         label="操作"
         align="center"
-        width="180"
+        width="240"
         class-name="small-padding fixed-width"
       >
         <template slot-scope="scope">
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-edit"
+            icon="el-icon-s-order"
+            @click="tasks(scope.row)"
+            v-hasPermi="['system:user:edit']"
+          >任务</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-data-line"
             @click="details(scope.row)"
             v-hasPermi="['system:user:edit']"
-          >详情</el-button>
+          >甘特图</el-button>
           <el-button
             v-if="scope.row.userId !== 1"
             size="mini"
             type="text"
+            style="color: #F56C6C;"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:user:remove']"
@@ -132,7 +140,7 @@
           </div>
         </el-aside>
         <div style="background-color:#E6E3E3; width:1px;"></div>
-        <el-main>
+        <el-main style="background: #fff;">
           <div style="height: 350px; margin: -20px -20px 0px -10px">
             <el-table v-loading="loading" :data="selectUserList" @selection-change="handleUserSelectionChange" v-model="form.selectUserList">
               <el-table-column type="selection" width="40" align="center" />
@@ -153,6 +161,7 @@
 
 <script>
 import { teamUserList, listUserByUserId, listUser, addTeamUser, delTeamUser } from "@/api/system/user";
+import { listTaskByUser } from "@/api/task"
 import { treeselect } from "@/api/system/dept";
 import {mapGetters} from "vuex";
 export default {
@@ -259,6 +268,9 @@ export default {
       delTeamUser(this.ids).then(res => {
         this.getList()
       })
+    },
+    tasks(item) {
+      this.$router.push('/user_task/list/' + item.userId)
     },
     details(item) {
       var data = item
