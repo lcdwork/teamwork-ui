@@ -3,7 +3,7 @@
     <span class="my-title-font">欢迎登陆项目管理系统</span>
     <br><br>
     <el-row :gutter="40" class="panel-group">
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
           <div class="card-panel-icon-wrapper icon-project">
             <svg-icon icon-class="table" class-name="card-panel-icon" />
@@ -12,17 +12,17 @@
             <div class="card-panel-text">
               进行中
             </div>
-            <count-to :start-val="0" :end-val="5" :duration="2600" class="card-panel-num" />
+            <span class="card-panel-num">{{ongoingProjectList.length}}</span>
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
               项目总数
             </div>
-            <count-to :start-val="0" :end-val="12" :duration="2600" class="card-panel-num" />
+            <span class="card-panel-num">{{projectList.length}}</span>
           </div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('purchases')">
           <div class="card-panel-icon-wrapper icon-task">
             <svg-icon icon-class="tab" class-name="card-panel-icon" />
@@ -31,30 +31,30 @@
             <div class="card-panel-text">
               进行中
             </div>
-            <count-to :start-val="0" :end-val="25" :duration="3200" class="card-panel-num" />
+            <span class="card-panel-num">{{ongoingTaskList.length}}</span>
           </div>
           <div class="card-panel-description">
             <div class="card-panel-text">
               任务总数
             </div>
-            <count-to :start-val="0" :end-val="65" :duration="3200" class="card-panel-num" />
+            <span class="card-panel-num">{{taskList.length}}</span>
           </div>
         </div>
       </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-        <div class="card-panel" @click="handleSetLineChartData('shoppings')">
-          <div class="card-panel-icon-wrapper icon-email">
-            <svg-icon icon-class="email" class-name="card-panel-icon" />
-          </div>
-          <div class="card-panel-description">
-            <div class="card-panel-text">
-              未读通知
-            </div>
-            <count-to :start-val="0" :end-val="26" :duration="3600" class="card-panel-num" />
-          </div>
-        </div>
-      </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+<!--      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">-->
+<!--        <div class="card-panel" @click="handleSetLineChartData('shoppings')">-->
+<!--          <div class="card-panel-icon-wrapper icon-email">-->
+<!--            <svg-icon icon-class="email" class-name="card-panel-icon" />-->
+<!--          </div>-->
+<!--          <div class="card-panel-description">-->
+<!--            <div class="card-panel-text">-->
+<!--              未读通知-->
+<!--            </div>-->
+<!--            <count-to :start-val="0" :end-val="26" :duration="3600" class="card-panel-num" />-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </el-col>-->
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('messages')">
           <div class="card-panel-icon-wrapper icon-message">
             <svg-icon icon-class="message" class-name="card-panel-icon" />
@@ -63,7 +63,13 @@
             <div class="card-panel-text">
               未读消息
             </div>
-            <count-to :start-val="0" :end-val="126" :duration="3000" class="card-panel-num" />
+            <span class="card-panel-num">{{unreadNoticeList.length}}</span>
+          </div>
+          <div class="card-panel-description">
+            <div class="card-panel-text">
+              所有消息
+            </div>
+            <span class="card-panel-num">{{noticeList.length}}</span>
           </div>
         </div>
       </el-col>
@@ -96,7 +102,9 @@
 import { mapGetters } from 'vuex'
 import CountTo from 'vue-count-to'
 import viewTaskDialog from '@/views/public/viewTaskDialog'
+import { listProjectByUser } from "@/api/project";
 import { listTaskByUser, updateUserTaskStatus, updateTask } from "@/api/task"
+import { listNotice } from "@/api/notice";
 export default {
   name: 'Dashboard',
   components: {
@@ -110,26 +118,104 @@ export default {
   },
   data() {
     return {
-      sortList:{
+      ongoingProjectList: [],
+      projectList: [],
+      projectParams: {
+        status: null,
+        userId: null
+      },
+      ongoingTaskList: [],
+      taskList: [],
+      taskParams:{
+        status: null,
         orderByColumn: undefined,
         taskUserStatus: 2,
         taskUserId: null
       },
+      noticeList: [],
+      unreadNoticeList: [],
+      noticeParams: {
+        userId: null,
+        readStatus: null
+      },
       taskInfo: {},
       viewTaskLoading: false,
       viewTaskDialog: false,
-      taskList: [],
     }
   },
   created() {
-    this.sortList.taskUserId = this.loginUserId
-    this.getTaskList(this.sortList)
+    this.getProjectList()
+    this.getOngoingProjectList()
+    this.getTaskList()
+    this.getOngoingTaskList()
+    this.getNoticeList()
+    this.getUnreadNoticeList()
+    // this.sortList.taskUserId = this.loginUserId
+    // this.getTaskList(this.sortList)
   },
   methods: {
-    getTaskList(val) {
-      listTaskByUser(val).then(response => {
+    paramsReset() {
+      this.projectParams = {
+        status: null,
+        userId: null
+      };
+      this.taskParams = {
+        status: null,
+        orderByColumn: undefined,
+        taskUserStatus: 2,
+        taskUserId: null
+      };
+      this.noticeParams = {
+        userId: null,
+        readStatus: null
+      };
+    },
+    getProjectList() {
+      this.paramsReset()
+      this.projectParams.userId = this.loginUserId
+      listProjectByUser(this.projectParams).then(response => {
+        this.projectList = response.rows
+      }).catch(
+      )
+    },
+    getOngoingProjectList() {
+      this.paramsReset()
+      this.projectParams.status = 1
+      this.projectParams.userId = this.loginUserId
+      listProjectByUser(this.projectParams).then(response => {
+        this.ongoingProjectList = response.rows
+      }).catch(
+      )
+    },
+    getTaskList() {
+      this.paramsReset()
+      this.taskParams.taskUserId = this.loginUserId
+      listTaskByUser(this.taskParams).then(response => {
         this.taskList = response.rows
       })
+    },
+    getOngoingTaskList() {
+      this.paramsReset()
+      this.taskParams.status = 1
+      this.taskParams.taskUserId = this.loginUserId
+      listTaskByUser(this.taskParams).then(response => {
+        this.ongoingTaskList = response.rows
+      })
+    },
+    getNoticeList() {
+      this.paramsReset()
+      this.noticeParams.userId = this.loginUserId
+      listNotice(this.noticeParams).then(response => {
+        this.noticeList = response.rows;
+      });
+    },
+    getUnreadNoticeList() {
+      this.paramsReset()
+      this.noticeParams.userId = this.loginUserId
+      this.noticeParams.readStatus = 0
+      listNotice(this.noticeParams).then(response => {
+        this.unreadNoticeList = response.rows;
+      });
     },
     showTask(item) {
       this.taskInfo = item

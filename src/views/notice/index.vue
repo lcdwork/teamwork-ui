@@ -274,7 +274,8 @@ export default {
         pageSize: 10,
         noticeTitle: undefined,
         createBy: undefined,
-        status: undefined
+        status: undefined,
+        readStatus: null
       },
       // 表单参数
       form: {},
