@@ -174,13 +174,13 @@ export default {
       this.delTaskDialog = true
     },
     goBack() {
-      this.$router.push('/project/list')
+      this.$router.push('/team/list')
     },
     getParams() {
       var routerParams = this.$route.params
       if (routerParams.projectId === null || routerParams.projectId === undefined) {
         this.$message.error('未获取到项目ID，请重新选择项目！')
-        this.$router.push('/project/list')
+        this.$router.push('/team/list')
         return
       }
       this.projectInfo = routerParams
@@ -365,7 +365,7 @@ export default {
           //   type: 'success'
           // })
           this.msgSuccess("删除成功");
-          this.$router.push('/project/list')
+          this.$router.push('/team/list')
         } else {
           // this.$notify({
           //   title: '删除失败',
