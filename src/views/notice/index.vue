@@ -226,7 +226,8 @@ export default {
       },
       updateReadParams: {
         userId: null,
-        noticeId: null
+        noticeId: null,
+        readStatus: null
       },
       editPermit: false,
       showType: false,
@@ -441,9 +442,12 @@ export default {
       this.open = true;
       this.getUserListByNotice();
       this.title = "消息详情";
-      if (row.readStatus === 1) {
+      console.log(row)
+      if (row.readStatus === "0") {
         this.updateReadParams.userId = this.loginUserId
         this.updateReadParams.noticeId = row.noticeId
+        this.updateReadParams.readStatus = 1
+        this.updateReadParams
         updateRead(this.updateReadParams).then(res => {
           // console.log(res)
         })
