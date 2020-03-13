@@ -77,3 +77,12 @@ export function listByTime(query) {
     params: query
   })
 }
+
+// 新增任务
+export function convertMemo(data) {
+  return request({
+    url: '/task/convertMemo',
+    method: 'post',
+    data: data
+  })
+}
