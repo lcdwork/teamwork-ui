@@ -1,10 +1,10 @@
 <template>
   <div class="app-container">
-    <el-page-header @back="goBack"/><br><br>
+    <el-page-header @back="goBack"/><br>
     <el-form :model="queryParams" ref="queryForm" :inline="true">
       <el-form-item label="任务名称">
         <el-input
-          v-model="queryParams.userName"
+          v-model="queryParams.taskName"
           placeholder="请输入任务名称"
           clearable
           size="small"
@@ -82,7 +82,6 @@
 </template>
 
 <script>
-import { listType, getType } from "@/api/system/dict/type";
 import { listTaskByUser } from "@/api/task";
 
 export default {
@@ -90,63 +89,38 @@ export default {
   data() {
     return {
       dateRange: [],
-      // 遮罩层
       loading: true,
-      // 总条数
       total: 0,
-      // 字典表格数据
       dataList: [],
-      // 默认字典类型
-      defaultDictType: "",
-      // 弹出层标题
-      title: "",
-      // 是否显示弹出层
       open: false,
-      // 状态数据字典
       statusOptions: [],
       tagOptions: [],
-      // 类型数据字典
-      typeOptions: [],
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
+        taskName: undefined,
         taskTag: undefined,
-        dictType: undefined,
+        userId: undefined,
         status: undefined
       }
     }
   },
   created() {
     const userId = this.$route.params && this.$route.params.userId;
-    this.getType(userId);
-    this.getTypeList();
+    this.queryParams.userId = userId
     this.getDicts("task_status").then(response => {
       this.statusOptions = response.data;
     });
     this.getDicts("task_tag").then(response => {
       this.tagOptions = response.data;
     });
+    this.getList()
   },
   methods: {
     goBack() {
       this.$router.go(-1)
     },
-    /** 查询字典类型详细 */
-    getType(dictId) {
-      getType(dictId).then(response => {
-        this.queryParams.dictType = response.data.dictType;
-        this.defaultDictType = response.data.dictType;
-        this.getList();
-      });
-    },
-    /** 查询字典类型列表 */
-    getTypeList() {
-      listType().then(response => {
-        this.typeOptions = response.rows;
-      });
-    },
-    /** 查询字典数据列表 */
     getList() {
       this.loading = true;
       listTaskByUser(this.queryParams).then(response => {
@@ -172,7 +146,6 @@ export default {
       var val = this.queryParams;
       val.startTime = "";
       val.stopTime = "";
-      console.log(this.dateRange)
       if (null != this.dateRange && '' != this.dateRange) {
         val.startTime = this.dateRange[0];
         val.stopTime = this.dateRange[1];

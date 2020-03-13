@@ -77,3 +77,12 @@ export function listByTime(query) {
     params: query
   })
 }
+
+// 获取甘特图
+export function ganttTree(data) {
+  return request({
+    url: '/task/ganttTree',
+    method: 'get',
+    params: data
+  })
+}
