@@ -64,7 +64,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { listUserByProject } from "@/api/system/user";
-import { listProject } from "@/api/project";
+import { listProject, listProjectByUser } from "@/api/project";
 export default {
   computed: {
     ...mapGetters([
@@ -103,6 +103,9 @@ export default {
       },
       userPopover: false,
       tagBtnPopover: false,
+      ProjectListParams:{
+        userId: null
+      },
       pickerOptions: {
         shortcuts: [{
           text: '最近一周',
@@ -183,7 +186,8 @@ export default {
   },
   methods: {
     getList() {
-      listProject().then(response => {
+      this.ProjectListParams.userId = this.loginUserId
+      listProjectByUser(this.ProjectListParams).then(response => {
         this.projectList = response.rows
       })
     },
