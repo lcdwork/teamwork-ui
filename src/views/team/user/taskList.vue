@@ -101,14 +101,14 @@ export default {
         pageSize: 10,
         taskName: undefined,
         taskTag: undefined,
-        userId: undefined,
+        taskUserId: undefined,
         status: undefined
       }
     }
   },
   created() {
     const userId = this.$route.params && this.$route.params.userId;
-    this.queryParams.userId = userId
+    this.queryParams.taskUserId = userId
     this.getDicts("task_status").then(response => {
       this.statusOptions = response.data;
     });
