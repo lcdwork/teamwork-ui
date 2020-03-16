@@ -100,7 +100,7 @@ import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { updateProject, delProject, getProjectLog } from "@/api/project";
 import { addTask, delTask, listTask, updateTask } from "@/api/task"
-import { listProject } from "@/api/project";
+import { listProjectByUser } from "@/api/project";
 let mainLoading
 export default {
   name: 'ProjectInfo',
@@ -151,7 +151,10 @@ export default {
         pageNum: 1,
         pageSize: 10,
         projectId: null
-      }
+      },
+      ProjectListParams:{
+        userId: null
+      },
     }
   },
   created() {
@@ -204,7 +207,8 @@ export default {
       )
     },
     getProjectList() {
-      listProject().then(response => {
+      this.ProjectListParams.userId = this.loginUserId
+      listProjectByUser(this.ProjectListParams).then(response => {
         this.pojectList = response.rows
       })
     },

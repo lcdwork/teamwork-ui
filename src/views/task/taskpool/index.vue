@@ -47,7 +47,7 @@ import { mapGetters } from 'vuex'
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 import taskCardList from '@/views/public/taskCardList'
 import { listTaskByUser, updateTask, updateUserTaskStatus } from "@/api/task"
-import { listProject, listProjectByUser } from "@/api/project";
+import { listProjectByUser } from "@/api/project";
 let mainLoading
 export default {
   name: 'index',

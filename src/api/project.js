@@ -3,13 +3,13 @@ import { praseStrEmpty } from "@/utils/teamwork";
 import da from "element-ui/src/locale/lang/da";
 
 // 查询项目列表
-export function listProject(query) {
-  return request({
-    url: '/project/list',
-    method: 'get',
-    params: query
-  })
-}
+// export function listProject(query) {
+//   return request({
+//     url: '/project/list',
+//     method: 'get',
+//     params: query
+//   })
+// }
 
 // 查询用户所在的项目列表
 export function listProjectByUser(query) {

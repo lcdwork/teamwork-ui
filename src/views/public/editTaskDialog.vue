@@ -94,12 +94,12 @@ export default {
     ]),
   },
   props: {
-    loading: {
-      type: Boolean,
-      default () {
-        return false
-      }
-    },
+    // loading: {
+    //   type: Boolean,
+    //   default () {
+    //     return false
+    //   }
+    // },
     projectList: {
       type: Array,
       default () {
@@ -147,6 +147,7 @@ export default {
   name: "taskDialog",
   data() {
     return {
+      loading: false,
       url: process.env.VUE_APP_BASE_API,
       loginUser: {
         userId: this.loginUserId,
@@ -294,6 +295,7 @@ export default {
       this.$emit("handleClose")
     },
     submitForm() {
+      this.loading = true
       this.$refs["form"].validate(valid => {
         if(valid) {
           var val = this.dialogForm;
@@ -306,6 +308,7 @@ export default {
             val.stopTime = this.dialogDate[1];
           }
           this.$emit('submitForm', val)
+          this.loading = false
         } else {
           this.$notify.error({
             title: '表单验证失败',

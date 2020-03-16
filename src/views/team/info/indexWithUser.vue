@@ -63,7 +63,6 @@
     </el-row>
 <!--    新增任务-->
     <new-task-dialog
-      :loading="addTaskLoading"
       :projectList="pojectList"
       :dialogVisible.sync="newTaskDialog"
       @handleCancel="newTaskDialog = false"
@@ -72,7 +71,6 @@
 <!--    编辑任务-->
     <edit-task-dialog
       :dialogForm="taskInfo"
-      :loading="editTaskLoading"
       :dialogVisible.sync="editTaskDialog"
       @handleCancel="editTaskDialog = false"
       @handleClose="handleEditTaskClose"
@@ -138,7 +136,8 @@ import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { updateProject, delProject, getProjectLog } from "@/api/project";
 import { addTask, delTask, listTask, updateTask } from "@/api/task"
-import { listProject } from "@/api/project";
+import { listProjectByUser } from "@/api/project";
+import {mapGetters} from "vuex";
 let mainLoading
 export default {
   name: 'ProjectInfo',
@@ -149,6 +148,11 @@ export default {
     taskCardList,
     delTaskDialog,
     editProDialog
+  },
+  computed: {
+    ...mapGetters([
+      'loginUserId'
+    ]),
   },
   data() {
     return {
@@ -212,7 +216,10 @@ export default {
         pageNum: 1,
         pageSize: 10,
         projectId: null
-      }
+      },
+      ProjectListParams:{
+        userId: null
+      },
     }
   },
   created() {
@@ -302,7 +309,8 @@ export default {
     },
     // 获取项目列表
     getProjectList() {
-      listProject().then(response => {
+      this.ProjectListParams.userId = this.loginUserId
+      listProjectByUser(this.ProjectListParams).then(response => {
         this.pojectList = response.rows
       })
     },

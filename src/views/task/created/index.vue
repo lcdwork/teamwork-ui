@@ -32,7 +32,7 @@ import editTaskDialog from '@/views/public/editTaskDialog'
 import sortTask from '@/views/public/sortTask'
 import taskCardList from '@/views/public/taskCardList'
 import { addTask, listTask, updateTask } from "@/api/task"
-import { listProject } from "@/api/project";
+import { listProjectByUser } from "@/api/project";
 import {mapGetters} from "vuex";
 let mainLoading
 export default {
@@ -65,7 +65,10 @@ export default {
       taskList: [],
       pojectList: [],
       taskSort1: [],
-      taskSort2: []
+      taskSort2: [],
+      ProjectListParams:{
+        userId: null
+      },
     }
   },
   created() {
@@ -95,7 +98,8 @@ export default {
       )
     },
     getProjectList() {
-      listProject().then(response => {
+      this.ProjectListParams.userId = this.loginUserId
+      listProjectByUser(this.ProjectListParams).then(response => {
         this.pojectList = response.rows
       })
     },

@@ -13,6 +13,16 @@
       <el-form-item label="任务标题" prop="taskName">
         <el-input clearable v-model="dialogForm.taskName" placeholder="任务标题" />
       </el-form-item>
+<!--      <el-form-item label="项目时间" prop="projectTime">-->
+<!--        <el-date-picker-->
+<!--          v-model="projectTime"-->
+<!--          value-format="yyyy-MM-dd HH:mm:ss"-->
+<!--          type="datetimerange"-->
+<!--          range-separator="至"-->
+<!--          start-placeholder="开始时间"-->
+<!--          end-placeholder="结束时间"-->
+<!--          align="left" />-->
+<!--      </el-form-item>-->
       <el-form-item label="任务时间" prop="taskTime">
         <el-date-picker
           v-model="taskTime"
@@ -64,7 +74,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { listUserByProject } from "@/api/system/user";
-import { listProject, listProjectByUser } from "@/api/project";
+import { listProjectByUser } from "@/api/project";
 export default {
   computed: {
     ...mapGetters([
@@ -73,9 +83,9 @@ export default {
     ]),
   },
   props: {
-    loading: {
-      type: Boolean
-    },
+    // loading: {
+    //   type: Boolean
+    // },
     dialogVisible: {
       type: Boolean,
     }
@@ -83,6 +93,7 @@ export default {
   name: "taskDialog",
   data() {
     return {
+      loading: false,
       url: process.env.VUE_APP_BASE_API,
       getProjectUser: {
         projectId: null,
@@ -90,6 +101,7 @@ export default {
       tagBtn: {},
       userList: [],
       taskTag: [],
+      projectTime: [],
       taskTime: [],
       projectList: [],
       taskStatusList: [],
@@ -191,7 +203,8 @@ export default {
         this.projectList = response.rows
       })
     },
-    proUsers() {
+    proUsers(row) {
+      console.log(row)
       this.getProjectUser.projectId = this.dialogForm.projectId
       listUserByProject(this.getProjectUser).then(response => {
         var list = response.rows
@@ -231,6 +244,7 @@ export default {
       this.$emit("handleClose")
     },
     submitForm() {
+      this.loading = true
       this.$refs["form"].validate(valid => {
         if(valid) {
           var val = this.dialogForm;
@@ -243,6 +257,7 @@ export default {
             val.stopTime = this.taskTime[1];
           }
           this.$emit('submitForm', val)
+          this.loading = false
         } else {
           this.$notify.error({
             title: '表单验证失败',

@@ -46,7 +46,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['system:user:add']"
+          v-hasPermi="['team:user:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -56,7 +56,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['system:user:remove']"
+          v-hasPermi="['team:user:remove']"
         >删除</el-button>
       </el-col>
     </el-row>
@@ -85,14 +85,14 @@
             type="text"
             icon="el-icon-s-order"
             @click="tasks(scope.row)"
-            v-hasPermi="['system:user:edit']"
+            v-hasPermi="['team:user:task']"
           >任务</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-data-line"
             @click="details(scope.row)"
-            v-hasPermi="['system:user:edit']"
+            v-hasPermi="['team:user:gantt']"
           >甘特图</el-button>
           <el-button
             v-if="scope.row.userId !== 1"
@@ -101,7 +101,7 @@
             style="color: #F56C6C;"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['system:user:remove']"
+            v-hasPermi="['team:user:remove']"
           >删除</el-button>
         </template>
       </el-table-column>

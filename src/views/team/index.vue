@@ -36,7 +36,7 @@
 <script>
 import sortTask from '@/views/public/sortTask'
 import newProDialog from '@/views/public/newProDialog'
-import { addProject, listProject, listProjectByUser } from "@/api/project";
+import { addProject, listProjectByUser } from "@/api/project";
 import {mapGetters} from "vuex";
 let mainLoading
 export default {
