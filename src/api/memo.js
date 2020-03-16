@@ -3,11 +3,11 @@ import { praseStrEmpty } from "@/utils/teamwork";
 import da from "element-ui/src/locale/lang/da";
 
 // 查询任务详细
-export function getMemo(data) {
+export function getMemo(query) {
   return request({
     url: '/memo/list',
     method: 'get',
-    data: data
+    params: query
   })
 }
 

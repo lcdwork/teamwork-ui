@@ -193,7 +193,8 @@
             loading: false,
             queryParams: {
               memoTitle: null,
-              memoContent: null
+              memoContent: null,
+              createUserId: null
             },
             // 非多选禁用
             multiple: true,
@@ -276,12 +277,19 @@
       methods: {
           // 查询
         getMemoList() {
+          console.log(this.loginUserId)
+          this.queryParams.createUserId = this.loginUserId
+          console.log(this.queryParams)
           getMemo(this.queryParams).then(res => {
             this.memoList = res.rows
           })
         },
         // 重置
         resetQuery() {
+          this.queryParams = {
+            memoTitle: null,
+            memoContent: null
+          }
 
         },
         // 新增
