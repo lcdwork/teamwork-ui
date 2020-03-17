@@ -21,7 +21,7 @@
 
       <!--      <el-tooltip  effect="dark" content="通知" placement="bottom">-->
       <a @click.sync="notifyDrawer = true" class="navbar-icon">
-        <el-badge style="position: initial;" :value="total" :max="99">
+        <el-badge style="position: initial;" :value="notifyNum" :max="99">
           <i class="el-icon-bell"></i>
         </el-badge>
       </a>
@@ -118,7 +118,7 @@
             <div class="notify-content">
               <span class="notify-content-info">{{ item.noticeContent }}</span>
               <span class="notify-content-status" :style="{'color': item.readStatus === undefined ? '#FFFFFF' : notifyReadStatusList.find(v => v.dictKey === item.readStatus).cssClass}">
-                <el-link class="notify-content-read" v-show="item.readStatus === 0" @click.stop="goGanttPage(item)" >标记已读</el-link>
+                <el-link :underline="false" class="notify-content-read" v-show="item.readStatus === 0" @click.stop="notifyHandleRead(item)" >标记已读</el-link>
                 {{ notifyReadStatusList.find(v => v.dictKey === item.readStatus).dictLabel }}
               </span>
             </div>
@@ -188,6 +188,7 @@ export default {
       state: '',
       timeout: null,
       calDrawer: false,
+      notifyNum: null,
       notifyDrawer: false,
       notifyHeight: null,
       notifyStatusList: [],
@@ -219,6 +220,8 @@ export default {
     this.getDicts("message_read_status").then(response => {
       this.notifyStatusList = response.data;
       this.notifyDropdown = this.notifyStatusList.find(v => v.isDefault === 'Y')
+      this.notifySearch.readStatus = this.notifyDropdown.dictKey
+      this.getNotifyList()
     })
     this.getDicts("message_handle").then(response => {
       this.notifyHandleList = response.data;
@@ -341,9 +344,19 @@ export default {
       )
     },
     intervalFun() {
-      var lastTotal = this.total
-      this.getNotifyList()
-      if(this.total > lastTotal) {
+      var lastTotal = this.notifyNum
+      var info = {
+        userId: this.loginUserId,
+        pageNum: 1,
+        pageSize: 10,
+        noticeTitle: undefined,
+        createBy: undefined,
+        readStatus: 0
+      }
+      listNotice(info).then(response => {
+        this.notifyNum = response.total;
+      });
+      if(this.notifyNum > lastTotal) {
         this.$notify.info({
           title: '通知',
           message: '您收到了新的通知',
@@ -360,9 +373,22 @@ export default {
       } else {
         this.notifySearch.readStatus = command.dictKey
       }
+      console.log(this.notifySearch.readStatus)
       this.getNotifyList()
     },
     notifyHandleCommand(command) {
+      this.getNotifyList()
+    },
+    notifyHandleRead(item) {
+      this.$notify({
+        title: '成功',
+        message: '通知已标记为已读',
+        type: 'success'
+      });
+      this.$notify.error({
+        title: '错误',
+        message: '通知标记已读失败'
+      });
       this.getNotifyList()
     },
     taskCommand(val) {

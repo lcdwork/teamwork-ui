@@ -29,7 +29,7 @@
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="状态" prop="noticeType">
+      <el-form-item label="状态" prop="readStatus">
         <el-select v-model="queryParams.readStatus" placeholder="消息状态" clearable size="small">
           <el-option
             v-for="dict in readStatusOptions"
@@ -406,7 +406,7 @@ export default {
         noticeTitle: undefined,
         noticeType: undefined,
         noticeContent: undefined,
-        status: "0"
+        status: 0
       };
       this.resetForm("form");
     },
@@ -441,7 +441,7 @@ export default {
       if (row.createByUserId == this.loginUserId) {
         this.editPermit = true
       }
-      if (row.noticeType === "2") {
+      if (row.noticeType === 2) {
         this.showType = true;
         this.getTreeselect();
       }
