@@ -45,10 +45,11 @@ export function updateRead(data) {
 }
 
 // 删除公告
-export function delNotice(noticeId) {
+export function delNotice(data) {
   return request({
-    url: '/notice/' + noticeId,
-    method: 'delete'
+    url: '/notice/remove',
+    method: 'delete',
+    data: data
   })
 }
 

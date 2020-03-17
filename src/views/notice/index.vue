@@ -71,7 +71,7 @@
           icon="el-icon-delete"
           size="mini"
           :disabled="multiple"
-          @click="handleDeleteBatch"
+          @click="handleDelete"
           v-hasPermi="['notice:remove']"
         >删除</el-button>
       </el-col>
@@ -229,7 +229,7 @@ export default {
       updateReadParams: {
         userId: null,
         noticeId: null,
-        readStatus: null
+        status: null
       },
       editPermit: false,
       showType: false,
@@ -279,6 +279,9 @@ export default {
         createBy: undefined,
         status: undefined,
         readStatus: null
+      },
+      delParams: {
+        noticeIds: null,
       },
       // 表单参数
       form: {},
@@ -376,7 +379,6 @@ export default {
     getList() {
       this.loading = true;
       listNotice(this.queryParams).then(response => {
-        console.log(response)
         this.noticeList = response.rows;
         this.total = response.total;
         this.loading = false;
@@ -398,6 +400,7 @@ export default {
     cancel() {
       this.open = false;
       this.reset();
+      this.getList();
     },
     // 表单重置
     reset() {
@@ -450,11 +453,10 @@ export default {
       this.open = true;
       this.getUserListByNotice();
       this.title = "消息详情";
-      console.log(row)
       if (row.readStatus === 0) {
         this.updateReadParams.userId = this.loginUserId
         this.updateReadParams.noticeId = row.noticeId
-        this.updateReadParams.readStatus = 1
+        this.updateReadParams.status = 1
         updateRead(this.updateReadParams).then(res => {
           // console.log(res)
         })
@@ -519,14 +521,20 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const noticeId = row.noticeId
-       // =  || this.ids
-      this.$confirm('是否确认删除公告编号为"' + noticeId + '"的数据项?', "警告", {
+      var noticeIds = {}
+      if (row.noticeId != null) {
+        this.ids = []
+        this.ids.push(row.noticeId)
+      }
+      noticeIds = this.ids
+      this.delParams.noticeIds = noticeIds
+      var data = this.delParams
+      this.$confirm('是否确认删除公告编号为"' + noticeIds + '"的数据项?', "警告", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning"
         }).then(function() {
-          return delNotice(noticeId);
+          return delNotice(data);
         }).then(() => {
           this.getList();
           this.msgSuccess("删除成功");
