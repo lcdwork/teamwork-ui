@@ -23,19 +23,19 @@
         <el-select v-model="queryParams.noticeType" placeholder="公告类型" clearable size="small">
           <el-option
             v-for="dict in typeOptions"
-            :key="dict.dictValue"
+            :key="dict.dictKey"
+            :value="dict.dictKey"
             :label="dict.dictLabel"
-            :value="dict.dictValue"
           />
         </el-select>
       </el-form-item>
       <el-form-item label="状态" prop="noticeType">
         <el-select v-model="queryParams.readStatus" placeholder="消息状态" clearable size="small">
           <el-option
-            v-for="dict in readStatus"
-            :key="dict.dictValue"
+            v-for="dict in readStatusOptions"
+            :key="dict.dictKey"
+            :value="dict.dictKey"
             :label="dict.dictLabel"
-            :value="dict.dictValue"
           />
         </el-select>
       </el-form-item>
@@ -181,8 +181,9 @@
                   <el-radio-group v-model="form.status">
                     <el-radio
                       v-for="dict in statusOptions"
-                      :key="dict.dictValue"
-                      :label="dict.dictValue"
+                      :key="dict.dictKey"
+                      :value="dict.dictKey"
+                      :label="dict.dictLabel"
                     >{{dict.dictLabel}}</el-radio>
                   </el-radio-group>
                 </el-form-item>
@@ -268,7 +269,7 @@ export default {
       // 消息类型数据字典
       typeOptions: [],
       // 消息状态数据字典
-      readStatus:[],
+      readStatusOptions:[],
       // 查询参数
       queryParams: {
         userId: this.loginUserId,
@@ -298,7 +299,7 @@ export default {
       this.statusOptions = response.data;
     });
     this.getDicts("user_notice_status").then(response => {
-      this.readStatus = response.data;
+      this.readStatusOptions = response.data;
     });
     this.getDicts("sys_notice_type").then(response => {
       this.typeOptions = response.data;
@@ -383,15 +384,15 @@ export default {
     },
     // 公告状态字典翻译
     statusFormat(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
+      return this.selectDictLabelByKey(this.statusOptions, row.status);
     },
     // 消息类型字典翻译
     typeFormat(row, column) {
-      return this.selectDictLabel(this.typeOptions, row.noticeType);
+      return this.selectDictLabelByKey(this.typeOptions, row.noticeType);
     },
     // 公告状态字典翻译
     readStatusFormat(row, column) {
-      return this.selectDictLabel(this.readStatus, row.readStatus);
+      return this.selectDictLabelByKey(this.readStatusOptions, row.readStatus);
     },
     // 取消按钮
     cancel() {
@@ -450,11 +451,10 @@ export default {
       this.getUserListByNotice();
       this.title = "消息详情";
       console.log(row)
-      if (row.readStatus === "0") {
+      if (row.readStatus === 0) {
         this.updateReadParams.userId = this.loginUserId
         this.updateReadParams.noticeId = row.noticeId
         this.updateReadParams.readStatus = 1
-        this.updateReadParams
         updateRead(this.updateReadParams).then(res => {
           // console.log(res)
         })

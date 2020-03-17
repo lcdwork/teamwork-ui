@@ -74,6 +74,18 @@ export function selectDictLabel(datas, value) {
 	return actions.join('');
 }
 
+// 回显数据字典ByKey
+export function selectDictLabelByKey(datas, value) {
+  var actions = [];
+  Object.keys(datas).map((key) => {
+    if (datas[key].dictKey == value) {
+      actions.push(datas[key].dictLabel);
+      return false;
+    }
+  })
+  return actions.join('');
+}
+
 // 通用下载方法
 export function download(fileName) {
 	window.location.href = baseURL + "/common/download?fileName=" + encodeURI(fileName) + "&delete=" + true;

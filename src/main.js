@@ -18,7 +18,7 @@ import './assets/icons' // icon
 import './permission' // permission control
 import { getDicts } from "@/api/system/dict/data";
 import { getConfigKey } from "@/api/system/config";
-import { parseTime, resetForm, addDateRange, selectDictLabel, download } from "@/utils/teamwork";
+import { parseTime, resetForm, addDateRange, selectDictLabel, selectDictLabelByKey, download } from "@/utils/teamwork";
 import Pagination from "@/components/Pagination";
 
 // 全局方法挂载
@@ -28,6 +28,7 @@ Vue.prototype.parseTime = parseTime
 Vue.prototype.resetForm = resetForm
 Vue.prototype.addDateRange = addDateRange
 Vue.prototype.selectDictLabel = selectDictLabel
+Vue.prototype.selectDictLabelByKey = selectDictLabelByKey
 Vue.prototype.download = download
 
 Vue.prototype.msgSuccess = function (msg) {

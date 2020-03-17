@@ -21,7 +21,7 @@
 
       <!--      <el-tooltip  effect="dark" content="通知" placement="bottom">-->
       <a @click.sync="notifyDrawer = true" class="navbar-icon">
-        <el-badge style="position: initial;" :value="notifyNum" :max="99">
+        <el-badge style="position: initial;" :value="total" :max="99">
           <i class="el-icon-bell"></i>
         </el-badge>
       </a>
@@ -100,37 +100,38 @@
         </div>
         <div class="demo-drawer__menuBar">
           <el-dropdown trigger="click" class="notify-dropdown" @command="notifyTypeCommand">
-            <span class="el-dropdown-link"><i class="el-icon-bell"></i> {{notifyDropdown}}<i class="el-icon-arrow-down el-icon--right"/></span>
+            <span class="el-dropdown-link"><i class="el-icon-bell"></i> {{notifyDropdown.dictLabel}}<i class="el-icon-arrow-down el-icon--right"/></span>
             <el-dropdown-menu align="center">
-              <el-dropdown-item command="notread"> 查看未读通知</el-dropdown-item>
-              <el-dropdown-item command="read"> 查看已读通知</el-dropdown-item>
+              <el-dropdown-item v-for="item in notifyStatusList" :key="item.dictKey" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
           <el-dropdown trigger="click" class="notify-dropdown" style="float: right" @command="notifyHandleCommand">
             <span class="el-dropdown-link"><i class="el-icon-more"></i></span>
             <el-dropdown-menu align="center">
-              <el-dropdown-item command="read">所有通知标记已读</el-dropdown-item>
-              <el-dropdown-item command="del"> 删除所有已读通知</el-dropdown-item>
+              <el-dropdown-item v-for="item in notifyHandleList" :key="item.dictKey" :command="item"> {{ item.dictLabel }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
         <div class="demo-drawer__timeline" :style="{'height': notifyHeight + 'px'}">
           <el-card class="notify-card" :body-style="{padding: '5px'}" v-for="item in notifyList" :key="item.id" shadow="hover">
-            <span class="notify-title"><i class="el-icon-warning-outline"></i>{{ item.notifyType }}</span><br>
+            <span class="notify-title"><i class="el-icon-warning-outline"></i>{{ item.noticeTitle }}</span><br>
             <div class="notify-content">
-              <span class="notify-content-info">{{ item.notifyContent }}</span>
-              <span class="notify-content-status">未读</span>
+              <span class="notify-content-info">{{ item.noticeContent }}</span>
+              <span class="notify-content-status" :style="{'color': item.readStatus === undefined ? '#FFFFFF' : notifyReadStatusList.find(v => v.dictKey === item.readStatus).cssClass}">
+                <el-link class="notify-content-read" v-show="item.readStatus === 0" @click.stop="goGanttPage(item)" >标记已读</el-link>
+                {{ notifyReadStatusList.find(v => v.dictKey === item.readStatus).dictLabel }}
+              </span>
             </div>
-            <span class="notify-datetime">{{ item.notifyTime}}</span>
+            <span class="notify-datetime">{{ item.createTime}}</span>
           </el-card>
-          <div class="demo-drawer__footer">
-            <pagination
-              v-show="total>0"
-              :total="total"
-              :page.sync="notifySearch.pageNum"
-              :limit.sync="notifySearch.pageSize"
-              @pagination="getNotifyList"/>
-          </div>
+        </div>
+        <div class="demo-drawer__footer">
+          <pagination
+            v-show="total>0"
+            :total="total"
+            :page.sync="notifySearch.pageNum"
+            :limit.sync="notifySearch.pageSize"
+            @pagination="getNotifyList"/>
         </div>
       </div>
     </el-drawer>
@@ -145,6 +146,7 @@ import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import { listTaskByUser, updateTask, updateUserTaskStatus, listByTime } from "@/api/task"
+import { listNotice } from "@/api/notice";
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 
 export default {
@@ -188,35 +190,21 @@ export default {
       calDrawer: false,
       notifyDrawer: false,
       notifyHeight: null,
-      notifyNum: null,
-      notifyDropdown: '查看全部通知',
+      notifyStatusList: [],
+      notifyReadStatusList: [],
+      notifyHandleList: [],
+      notifyTypeList: [],
+      notifyDropdown: {},
       notifySearch: {
+        userId: null,
         pageNum: 1,
-        pageSize: 10
+        pageSize: 10,
+        noticeTitle: undefined,
+        createBy: undefined,
+        // status: undefined,
+        readStatus: null
       },
-      notifyList: [
-        {
-          id: 1,
-          notifyType: '系统消息',
-          notifyContent: '消息内容',
-          notifyStatus: '未读',
-          notifyTime: '2019/12/31 10:10'
-        },
-        {
-          id: 2,
-          notifyType: '系统消息',
-          notifyContent: '消息内容',
-          notifyStatus: '未读',
-          notifyTime: '2019/12/31 10:10'
-        },
-        {
-          id: 3,
-          notifyType: '系统消息',
-          notifyContent: '消息内容',
-          notifyStatus: '未读',
-          notifyTime: '2019/12/31 10:10'
-        }
-      ],
+      notifyList: [],
       calendarDate: new Date(),
       calendarSearch: {
         taskUserId: null,
@@ -226,6 +214,22 @@ export default {
       },
       calendarData: []
     }
+  },
+  created() {
+    this.getDicts("message_read_status").then(response => {
+      this.notifyStatusList = response.data;
+      this.notifyDropdown = this.notifyStatusList.find(v => v.isDefault === 'Y')
+    })
+    this.getDicts("message_handle").then(response => {
+      this.notifyHandleList = response.data;
+    })
+    this.getDicts("sys_notice_type").then(response => {
+      this.notifyTypeList = response.data;
+    })
+    this.getDicts("user_notice_status").then(response => {
+      this.notifyReadStatusList = response.data;
+    })
+    this.notifySearch.userId = this.loginUserId
   },
   methods: {
     calDrawerWindow() {
@@ -272,6 +276,12 @@ export default {
       listByTime(this.calendarSearch).then(response => {
         this.calendarData = response.rows
       })
+    },
+    getNotifyList() {
+      listNotice(this.notifySearch).then(response => {
+        this.notifyList = response.rows;
+        this.total = response.total;
+      });
     },
     // 搜索框方法
     handleSelect(item) {
@@ -331,37 +341,29 @@ export default {
       )
     },
     intervalFun() {
-      this.notifyNum = this.notifyNum + 1
-      // this.$notify.info({
-      //   title: '通知',
-      //   message: '您有一条新的通知',
-      //   onClick: function() {
-      //     console.log('click')
-      //   }
-      // })
-    },
-    getNotifyList() {
-      //
-    },
-    notifyTypeCommand(val) {
-      switch (val) {
-        case 'notread':
-          // this.newTaskFun()
-          break
-        case 'read':
-          // this.delProjectDialog = true
-          break
+      var lastTotal = this.total
+      this.getNotifyList()
+      if(this.total > lastTotal) {
+        this.$notify.info({
+          title: '通知',
+          message: '您收到了新的通知',
+          onClick: function() {
+            console.log('click')
+          }
+        })
       }
     },
-    notifyHandleCommand(val) {
-      switch (val) {
-        case 'read':
-          // this.newTaskFun()
-          break
-        case 'del':
-          // this.delProjectDialog = true
-          break
+    notifyTypeCommand(command) {
+      this.notifyDropdown = command
+      if (command.dictKey === 2) {
+        this.notifySearch.readStatus = null
+      } else {
+        this.notifySearch.readStatus = command.dictKey
       }
+      this.getNotifyList()
+    },
+    notifyHandleCommand(command) {
+      this.getNotifyList()
     },
     taskCommand(val) {
       this.taskInfo = val
@@ -387,7 +389,7 @@ export default {
       setTimeout(() => {
         this.intervalFun()
       }, 0)
-    }, 5000)
+    }, 30000)
     this.notifyHeight = window.innerHeight - 150
     window.onresize = () => {
       return (() => {
@@ -536,14 +538,19 @@ export default {
     color: #8c8c8c;
   }
   .notify-content {
-    padding: 5px 0 0 10px;
-    font-size: 13px;
+    padding: 7px 0 2px 10px;
+    font-size: 14px;
     .notify-content-info {
       color: #5a5e66;
     }
     .notify-content-status {
-      color: #F56C6C;
+      /*color: #F56C6C;*/
       float: right;
+      .notify-content-read {
+        margin-top: -2px;
+        font-size: 13px;
+        color: #8c8c8c;
+      }
     }
   }
   .notify-datetime {
@@ -593,7 +600,8 @@ export default {
   background-color: lightgray;
 }
 .demo-drawer__footer{
-  display: flex;
+  /*display: flex;*/
+  display: flow-root;
 }
 /deep/ .el-autocomplete {
   position: absolute;
