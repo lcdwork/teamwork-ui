@@ -21,9 +21,10 @@
 
       <!--      <el-tooltip  effect="dark" content="通知" placement="bottom">-->
       <a @click.sync="notifyDrawer = true" class="navbar-icon">
-        <el-badge style="position: initial;" :value="notifyNum" :max="99">
+        <el-badge v-if="notifyNum > 0" style="position: initial;" :value="notifyNum" :max="99">
           <i class="el-icon-bell"></i>
         </el-badge>
+        <el-badge v-else style="position: initial;"><i class="el-icon-bell"></i></el-badge>
       </a>
       <!--      </el-tooltip>-->
       <!--      <el-tooltip class="item" effect="dark"  content="日历" placement="bottom">-->
@@ -146,7 +147,7 @@ import Screenfull from '@/components/Screenfull'
 import SizeSelect from '@/components/SizeSelect'
 import Search from '@/components/HeaderSearch'
 import { listTaskByUser, updateTask, updateUserTaskStatus, listByTime } from "@/api/task"
-import { listNotice } from "@/api/notice";
+import { listNotice, updateRead, delNotice } from "@/api/notice";
 import viewTaskDialog from '@/views/public/viewTaskDialog'
 
 export default {
@@ -377,18 +378,73 @@ export default {
       this.getNotifyList()
     },
     notifyHandleCommand(command) {
+      switch (command.dictKey) {
+        case 1: {
+          var info = {
+            userId: this.loginUserId,
+            status: 1
+          }
+          updateRead(info).then(response => {
+            if (response.code === 200) {
+              this.$notify({
+                title: '成功',
+                message: '通知已标记为已读',
+                type: 'success'
+              });
+            } else {
+              this.$notify.error({
+                title: '错误',
+                message: '通知标记已读失败'
+              });
+            }
+          })
+          break
+        }
+        case 2: {
+          var info = {
+            userId: this.loginUserId,
+            readStatus: 1
+          }
+          delNotice(info).then(response => {
+            console.log(response)
+            if (response.code === 200) {
+              this.$notify({
+                title: '成功',
+                message: '通知已标记为已读',
+                type: 'success'
+              });
+            } else {
+              this.$notify.error({
+                title: '错误',
+                message: '通知标记已读失败'
+              });
+            }
+          })
+          break
+        }
+      }
       this.getNotifyList()
     },
     notifyHandleRead(item) {
-      this.$notify({
-        title: '成功',
-        message: '通知已标记为已读',
-        type: 'success'
-      });
-      this.$notify.error({
-        title: '错误',
-        message: '通知标记已读失败'
-      });
+      var info = {
+        userId: this.loginUserId,
+        noticeId: item.noticeId,
+        status: 1
+      }
+      updateRead(info).then(response => {
+        if (response.code === 200) {
+          this.$notify({
+            title: '成功',
+            message: '通知已标记为已读',
+            type: 'success'
+          });
+        } else {
+          this.$notify.error({
+            title: '错误',
+            message: '通知标记已读失败'
+          });
+        }
+      })
       this.getNotifyList()
     },
     taskCommand(val) {
