@@ -100,7 +100,8 @@
             </el-col>
             <el-col :span="24">
               <el-form-item label="内容" prop="memoContent">
-                <Editor v-model="form.memoContent" />
+<!--                <Editor v-model="form.memoContent" />-->
+                <el-input v-model="form.memoContent" type="textarea" :autosize="{ minRows: 3, maxRows: 6}" placeholder="内容" />
               </el-form-item>
             </el-col>
           </el-row>

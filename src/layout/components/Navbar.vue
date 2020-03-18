@@ -113,18 +113,20 @@
             </el-dropdown-menu>
           </el-dropdown>
         </div>
-        <div class="demo-drawer__timeline" :style="{'height': notifyHeight + 'px'}">
-          <el-card class="notify-card" :body-style="{padding: '5px'}" v-for="item in notifyList" :key="item.id" shadow="hover">
-            <span class="notify-title"><i class="el-icon-warning-outline"></i>{{ item.noticeTitle }}</span><br>
-            <div class="notify-content">
-              <span class="notify-content-info">{{ item.noticeContent }}</span>
-              <span class="notify-content-status" :style="{'color': item.readStatus === undefined ? '#FFFFFF' : notifyReadStatusList.find(v => v.dictKey === item.readStatus).cssClass}">
+        <div :style="{'height': notifyHeight + 'px','overflow': 'auto'}">
+          <div class="demo-drawer__timeline">
+            <el-card class="notify-card" :body-style="{padding: '5px'}" v-for="item in notifyList" :key="item.id" shadow="hover">
+              <span class="notify-title"><i class="el-icon-warning-outline"></i>{{ item.noticeTitle }}</span><br>
+              <div class="notify-content">
+                <span class="notify-content-info">{{ item.noticeContent }}</span>
+                <span class="notify-content-status" :style="{'color': item.readStatus === undefined ? '#FFFFFF' : notifyReadStatusList.find(v => v.dictKey === item.readStatus).cssClass}">
                 <el-link :underline="false" class="notify-content-read" v-show="item.readStatus === 0" @click.stop="notifyHandleRead(item)" >标记已读</el-link>
                 {{ notifyReadStatusList.find(v => v.dictKey === item.readStatus).dictLabel }}
               </span>
-            </div>
-            <span class="notify-datetime">{{ item.createTime}}</span>
-          </el-card>
+              </div>
+              <span class="notify-datetime">{{ item.createTime}}</span>
+            </el-card>
+          </div>
         </div>
         <div class="demo-drawer__footer">
           <pagination
@@ -382,7 +384,7 @@ export default {
         case 1: {
           var info = {
             userId: this.loginUserId,
-            status: 1
+            readStatus: 1
           }
           updateRead(info).then(response => {
             if (response.code === 200) {
@@ -391,6 +393,7 @@ export default {
                 message: '通知已标记为已读',
                 type: 'success'
               });
+              this.getNotifyList()
             } else {
               this.$notify.error({
                 title: '错误',
@@ -410,26 +413,26 @@ export default {
             if (response.code === 200) {
               this.$notify({
                 title: '成功',
-                message: '通知已标记为已读',
+                message: '已删除所有已读通知',
                 type: 'success'
               });
+              this.getNotifyList()
             } else {
               this.$notify.error({
                 title: '错误',
-                message: '通知标记已读失败'
+                message: '删除所有已读通知失败'
               });
             }
           })
           break
         }
       }
-      this.getNotifyList()
     },
     notifyHandleRead(item) {
       var info = {
         userId: this.loginUserId,
         noticeId: item.noticeId,
-        status: 1
+        readStatus: 1
       }
       updateRead(info).then(response => {
         if (response.code === 200) {
@@ -438,6 +441,7 @@ export default {
             message: '通知已标记为已读',
             type: 'success'
           });
+          this.getNotifyList()
         } else {
           this.$notify.error({
             title: '错误',
@@ -445,7 +449,6 @@ export default {
           });
         }
       })
-      this.getNotifyList()
     },
     taskCommand(val) {
       this.taskInfo = val
@@ -610,8 +613,8 @@ export default {
 .demo-drawer__timeline{
   padding-top: 5px;
   flex: 1;
-  overflow: auto;
-  overflow-x: hidden;
+  /*overflow: auto;*/
+  /*overflow-x: hidden;*/
   cursor: pointer;
 
   .notify-title {

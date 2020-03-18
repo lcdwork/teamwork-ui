@@ -103,16 +103,18 @@
         <div class="demo-drawer__header">
           <span style="outline: none;" role="heading" tabindex="0">操作历史</span>
         </div>
-        <el-timeline class="demo-drawer__timeline" :style="{'height': drawerHeight + 'px'}">
-          <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
-            <el-card :body-style="{padding: '0px'}" shadow="hover">
-              <div style="margin-left: 10px">
-                <h4>{{activity.content}}</h4>
-                <p>{{activity.nickName}} 提交于 {{activity.operateTime}}</p>
-              </div>
-            </el-card>
-          </el-timeline-item>
-        </el-timeline>
+        <div :style="{'height': drawerHeight + 'px','overflow': 'auto'}">
+          <el-timeline class="demo-drawer__timeline">
+            <el-timeline-item v-for="activity in activities" :type="activity.type" placement="bottom">
+              <el-card :body-style="{padding: '0px'}" shadow="hover">
+                <div style="margin-left: 10px">
+                  <h4>{{activity.content}}</h4>
+                  <p>{{activity.nickName}} 提交于 {{activity.operateTime}}</p>
+                </div>
+              </el-card>
+            </el-timeline-item>
+          </el-timeline>
+        </div>
         <div class="demo-drawer__footer">
           <pagination
             v-show="total>0"
@@ -540,8 +542,8 @@ export default {
 .demo-drawer__timeline{
   padding-top: 5px;
   flex: 1;
-  overflow: auto;
-  overflow-x: hidden;
+  /*overflow: auto;*/
+  /*overflow-x: hidden;*/
 }
 .demo-drawer__header {
   -webkit-box-align: center;
@@ -561,12 +563,6 @@ export default {
   height: 100%;
   flex: 1;
 }
-/*.demo-drawer__timeline{*/
-/*  padding-top: 5px;*/
-/*  flex: 1;*/
-/*  overflow: auto;*/
-/*  overflow-x: hidden;*/
-/*}*/
 ::-webkit-scrollbar-track
 {
   -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);

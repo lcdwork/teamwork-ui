@@ -178,7 +178,7 @@
                   <el-input v-model="form.noticeTitle" placeholder="请输入消息标题" />
                 </el-form-item>
                 <el-form-item label="状态">
-                  <el-radio-group v-model="form.status">
+                  <el-radio-group v-model="form.readStatus">
                     <el-radio
                       v-for="dict in statusOptions"
                       :key="dict.dictKey"
@@ -188,7 +188,8 @@
                   </el-radio-group>
                 </el-form-item>
                 <el-form-item label="内容">
-                  <Editor v-model="form.noticeContent" />
+<!--                  <Editor v-model="form.noticeContent" />-->
+                  <el-input v-model="form.noticeContent" type="textarea" :autosize="{ minRows: 5, maxRows: 10}" placeholder="通知内容" />
                 </el-form-item>
               </el-form>
             </div>
@@ -229,7 +230,7 @@ export default {
       updateReadParams: {
         userId: null,
         noticeId: null,
-        status: null
+        readStatus: null
       },
       editPermit: false,
       showType: false,
@@ -277,7 +278,6 @@ export default {
         pageSize: 10,
         noticeTitle: undefined,
         createBy: undefined,
-        status: undefined,
         readStatus: null
       },
       delParams: {
@@ -384,10 +384,6 @@ export default {
         this.loading = false;
       });
     },
-    // 公告状态字典翻译
-    statusFormat(row, column) {
-      return this.selectDictLabelByKey(this.statusOptions, row.status);
-    },
     // 消息类型字典翻译
     typeFormat(row, column) {
       return this.selectDictLabelByKey(this.typeOptions, row.noticeType);
@@ -456,7 +452,7 @@ export default {
       if (row.readStatus === 0) {
         this.updateReadParams.userId = this.loginUserId
         this.updateReadParams.noticeId = row.noticeId
-        this.updateReadParams.status = 1
+        this.updateReadParams.readStatus = 1
         updateRead(this.updateReadParams).then(res => {
           // console.log(res)
         })
@@ -491,6 +487,7 @@ export default {
               }
             });
           } else {
+            console.log(this.form)
             addNotice(this.form).then(response => {
               if (response.code === 200) {
                 this.msgSuccess("新增成功");
