@@ -162,8 +162,8 @@
         <el-container>
           <el-aside width="40%" style="background: #fff;">
             <div style="height: 360px; margin: -10px -20px 0px -20px;">
-              <el-table v-loading="loading" :data="userList" @selection-change="handleUserSelectionChange" v-model="form.userList">
-                <el-table-column type="selection" width="40" align="center" />
+              <el-table ref="multipleTable" v-loading="loading" :data="userList" @selection-change="handleUserSelectionChange" v-model="form.userList">
+                <el-table-column v-if="editDisable == false" type="selection" width="40" align="center" />
                 <el-table-column label="用户编号" align="center" prop="userId" />
                 <el-table-column label="用户名称" align="center" prop="userName" :show-overflow-tooltip="true" />
                 <el-table-column label="用户昵称" align="center" prop="nickName" :show-overflow-tooltip="true" />
@@ -174,22 +174,22 @@
           <el-main>
             <div style="height: 360px; margin: -10px -20px 0px -15px;">
               <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-                <el-form-item label="消息标题" prop="noticeTitle">
-                  <el-input v-model="form.noticeTitle" placeholder="请输入消息标题" />
+                <el-form-item label="公告标题" prop="noticeTitle">
+                  <el-input :disabled="editDisable" v-model="form.noticeTitle" placeholder="请输入消息标题" />
                 </el-form-item>
-                <el-form-item label="状态">
-                  <el-radio-group v-model="form.readStatus">
-                    <el-radio
-                      v-for="dict in statusOptions"
-                      :key="dict.dictKey"
-                      :value="dict.dictKey"
-                      :label="dict.dictLabel"
-                    >{{dict.dictLabel}}</el-radio>
-                  </el-radio-group>
-                </el-form-item>
+<!--                <el-form-item label="状态">-->
+<!--                  <el-radio-group :disabled="editDisable" v-model="form.readStatus">-->
+<!--                    <el-radio-->
+<!--                      v-for="dict in statusOptions"-->
+<!--                      :key="dict.dictKey"-->
+<!--                      :value="dict.dictKey"-->
+<!--                      :label="dict.dictKey"-->
+<!--                    >{{dict.dictLabel}}</el-radio>-->
+<!--                  </el-radio-group>-->
+<!--                </el-form-item>-->
                 <el-form-item label="内容">
 <!--                  <Editor v-model="form.noticeContent" />-->
-                  <el-input v-model="form.noticeContent" type="textarea" :autosize="{ minRows: 5, maxRows: 10}" placeholder="通知内容" />
+                  <el-input :disabled="editDisable" v-model="form.noticeContent" type="textarea" :autosize="{ minRows: 5, maxRows: 10}" placeholder="通知内容" />
                 </el-form-item>
               </el-form>
             </div>
@@ -223,6 +223,7 @@ export default {
   },
   data() {
     return {
+      editDisable: true,
       projectName: null,
       treeselectParams: {
        userId: null
@@ -248,7 +249,7 @@ export default {
         noticeId: null,
       },
       // 用户表格数据
-      userList: null,
+      userList: [],
       // 遮罩层
       loading: true,
       // 选中数组
@@ -315,6 +316,16 @@ export default {
     }
   },
   methods: {
+    // 清除多选
+    toggleSelection() {
+      if (this.userList) {
+        this.userList.forEach(row => {
+          this.$refs.multipleTable.toggleRowSelection(row);
+        });
+      } else {
+        this.$refs.multipleTable.clearSelection();
+      }
+    },
     /** 查询项目任务下拉树结构 */
     getTreeselect() {
       this.treeselectParams.userId = this.loginUserId
@@ -427,6 +438,8 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
+      this.editDisable = false
+      this.toggleSelection()
       this.reset();
       this.open = true;
       this.getTreeselect();
@@ -436,6 +449,7 @@ export default {
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
+      this.editDisable = true
       this.editPermit = false
       if (row.createByUserId == this.loginUserId) {
         this.editPermit = true
@@ -476,18 +490,7 @@ export default {
       }
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if (this.form.noticeId != undefined) {
-            updateNotice(this.form).then(response => {
-              if (response.code === 200) {
-                this.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              } else {
-                this.msgError(response.msg);
-              }
-            });
-          } else {
-            console.log(this.form)
+          if (this.form.noticeId === undefined) {
             addNotice(this.form).then(response => {
               if (response.code === 200) {
                 this.msgSuccess("新增成功");
@@ -497,6 +500,16 @@ export default {
                 this.msgError(response.msg);
               }
             });
+          } else {
+            // updateNotice(this.form).then(response => {
+            //   if (response.code === 200) {
+            //     this.msgSuccess("修改成功");
+            //     this.open = false;
+            //     this.getList();
+            //   } else {
+            //     this.msgError(response.msg);
+            //   }
+            // });
           }
         }
       });
