@@ -278,7 +278,6 @@ export default {
       var lastDay = new Date(year,date.getMonth()+1,0).getDate()
       this.calendarSearch.startDate = year+"-"+month+"-01"
       this.calendarSearch.endDate =  year+"-"+month+"-"+lastDay
-      console.log(this.calendarSearch)
       listByTime(this.calendarSearch).then(response => {
         this.calendarData = response.rows
       })

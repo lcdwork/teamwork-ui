@@ -1,177 +1,175 @@
 <template>
-    <div>
-      <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
-        <el-form-item label="标题" prop="memoTitle">
-          <el-input
-            v-model="queryParams.memoTitle"
-            placeholder="请输入标题"
-            clearable
-            size="small"
-            @keyup.enter.native="getMemoList"
-          />
-        </el-form-item>
-        <el-form-item label="内容" prop="memoContent">
-          <el-input
-            v-model="queryParams.memoContent"
-            placeholder="请输入标题"
-            clearable
-            size="small"
-            @keyup.enter.native="getMemoList"
-          />
-        </el-form-item>
+  <el-tabs type="card">
+    <el-tab-pane label="备忘录日历">
+      <memo-calendar></memo-calendar>
+    </el-tab-pane>
+    <el-tab-pane label="备忘录管理">
+      <div class="app-container">
+        <el-form :model="queryParams" ref="queryForm" :inline="true">
+          <el-form-item label="标题" prop="memoTitle">
+            <el-input
+              v-model="queryParams.memoTitle"
+              placeholder="请输入标题"
+              clearable
+              size="small"
+              @keyup.enter.native="getMemoList"
+            />
+          </el-form-item>
+          <el-form-item label="内容" prop="memoContent">
+            <el-input
+              v-model="queryParams.memoContent"
+              placeholder="请输入标题"
+              clearable
+              size="small"
+              @keyup.enter.native="getMemoList"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" icon="el-icon-search" size="mini" @click="getMemoList">搜索</el-button>
+            <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+          </el-form-item>
+        </el-form>
 
-        <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="mini" @click="getMemoList">搜索</el-button>
-          <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
-        </el-form-item>
-      </el-form>
-
-      <el-row :gutter="10" class="mb8">
-        <el-col :span="1.5">
-          <el-button
-            type="primary"
-            icon="el-icon-plus"
-            size="mini"
-            @click="handleAdd"
-          >新增</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-            type="danger"
-            icon="el-icon-delete"
-            size="mini"
-            :disabled="multiple"
-            @click="handleDelete"
-          >删除</el-button>
-        </el-col>
-        <el-col :span="1.5">
-          <el-button
-            type="primary"
-            icon="el-icon-plus"
-            size="mini"
-            :disabled="multiple"
-            @click="handleConvert"
-          >转成待办任务</el-button>
-        </el-col>
-        <a @click="calDrawerWindow" class="navbar-icon"><i class="el-icon-date"></i></a>
-      </el-row>
-
-      <el-table v-loading="loading" :data="memoList" @selection-change="handleSelectionChange">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="序号" align="center" prop="memoId" width="100" />
-        <el-table-column
-          label="标题"
-          align="center"
-          prop="memoTitle"
-          :show-overflow-tooltip="true"
-        />
-        <el-table-column label="内容" align="center" prop="memoContent" :show-overflow-tooltip="true" />
-        <el-table-column label="创建者" align="center" prop="createBy" width="100" />
-        <el-table-column label="备忘录时间" align="center" prop="createTime" width="100">
-          <template slot-scope="scope">
-            <span>{{ parseTime(scope.row.memoTime, '{y}-{m}-{d}') }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-          <template slot-scope="scope">
+        <el-row :gutter="10" class="mb8">
+          <el-col :span="1.5">
             <el-button
+              type="primary"
+              icon="el-icon-plus"
               size="mini"
-              type="text"
-              icon="el-icon-edit"
-              @click="handleUpdate(scope.row)"
-            >详情</el-button>
+              @click="handleAdd"
+            >新增</el-button>
+          </el-col>
+          <el-col :span="1.5">
             <el-button
-              size="mini"
-              type="text"
+              type="danger"
               icon="el-icon-delete"
-              @click="handleDelete(scope.row)"
+              size="mini"
+              :disabled="multiple"
+              @click="handleDelete"
             >删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-col>
+          <el-col :span="1.5">
+            <el-button
+              type="primary"
+              icon="el-icon-plus"
+              size="mini"
+              :disabled="multiple"
+              @click="handleConvert"
+            >转成待办任务</el-button>
+          </el-col>
+        </el-row>
 
-      <el-dialog :title="title" :visible.sync="open" width="780px">
-        <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-          <el-row>
-            <el-col :span="24">
-              <el-form-item label="标题" prop="memoTitle">
-                <el-input v-model="form.memoTitle" placeholder="请输入标题" />
-              </el-form-item>
-            </el-col>
-            <el-col :span="24">
-              <el-form-item label="内容" prop="memoContent">
-<!--                <Editor v-model="form.memoContent" />-->
-                <el-input v-model="form.memoContent" type="textarea" :autosize="{ minRows: 3, maxRows: 6}" placeholder="内容" />
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form>
-        <div slot="footer" class="dialog-footer" style="padding-top:20px">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
-        </div>
-      </el-dialog>
+        <el-table v-loading="loading" :data="memoList" @selection-change="handleSelectionChange">
+          <el-table-column type="selection" width="55" align="center" />
+          <el-table-column label="序号" align="center" prop="memoId" width="100" />
+          <el-table-column
+            label="标题"
+            align="center"
+            prop="memoTitle"
+            :show-overflow-tooltip="true"
+          />
+          <el-table-column label="内容" align="center" prop="memoContent" :show-overflow-tooltip="true" />
+          <el-table-column label="创建者" align="center" prop="createBy" width="100" />
+          <el-table-column label="备忘录时间" align="center" prop="createTime" width="100">
+            <template slot-scope="scope">
+              <span>{{ parseTime(scope.row.memoTime, '{y}-{m}-{d}') }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
+              >详情</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
+              >删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
 
-      <el-dialog :title="title" :visible.sync="calDrawer" width="780px">
-        <el-calendar v-model="calendarDate" id="calendar" :selectedDate="selectDate" :selectDom="selectDom" @select="select" @data-change="changeDate" @pick="pick">
-          <template
-            slot-scope="{date, data}">
-          </template>
-        </el-calendar>
-      </el-dialog>
+        <el-dialog :title="title" :visible.sync="open" width="780px">
+          <el-form ref="form" :model="form" :rules="rules" label-width="80px">
+            <el-row>
+              <el-col :span="24">
+                <el-form-item label="标题" prop="memoTitle">
+                  <el-input v-model="form.memoTitle" placeholder="请输入标题" />
+                </el-form-item>
+              </el-col>
+              <el-col :span="24">
+                <el-form-item label="内容" prop="memoContent">
+                  <!--                <Editor v-model="form.memoContent" />-->
+                  <el-input v-model="form.memoContent" type="textarea" :autosize="{ minRows: 3, maxRows: 6}" placeholder="内容" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
+          <div slot="footer" class="dialog-footer" style="padding-top:20px">
+            <el-button type="primary" @click="submitForm">确 定</el-button>
+            <el-button @click="cancel">取 消</el-button>
+          </div>
+        </el-dialog>
+        <el-dialog :title="convertTitle" :visible.sync="openConvert" width="780px">
+          <el-form ref="convertForm" :model="convertForm" :rules="convertRules" label-width="80px">
+            <el-form-item label="所属项目" prop="projectId">
+              <el-select v-model="convertForm.projectId" placeholder="所属项目" @change="proUsers" clearable size="small">
+                <el-option
+                  v-for="item in projectList"
+                  :key="item.projectId"
+                  :label="item.projectName"
+                  :value="item.projectId"/>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="任务时间" prop="taskTime">
+              <el-date-picker
+                v-model="taskTime"
+                value-format="yyyy-MM-dd HH:mm:ss"
+                type="datetimerange"
+                :picker-options="pickerOptions"
+                range-separator="至"
+                start-placeholder="设置开始时间"
+                end-placeholder="设置结束时间"
+                align="left" />
+            </el-form-item>
+            <el-form-item label="任务人员">
+              <el-popover v-for="item in convertForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
+                <span>联系方式：{{ item.phonenumber }}</span>
+                <div style="text-align: right; margin: 0">
+                  <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
+                </div>
+                <el-avatar v-if="item.avatar === null || item.avatar === ''" slot="reference" style="margin: 0 5px -15px 0;font-size: 12px">{{ item.nickName }}</el-avatar>
+                <el-avatar v-else slot="reference" style="margin: 0 5px -15px 0" :src="url + item.avatar" />
+              </el-popover>
+              <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
+                <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
+                  <el-avatar v-if="item.avatar === null || item.avatar === ''" style="margin-bottom: -5px;font-size: 12px">{{ item.nickName }}</el-avatar>
+                  <el-avatar v-else style="margin-bottom: -5px;" :src="url + item.avatar"/>
+                  <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
+                </el-card>
+                <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
+              </el-popover>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer" style="padding-top:20px">
+            <el-button type="primary" @click="convertSubmitForm">确 定</el-button>
+            <el-button @click="convertCancel">取 消</el-button>
+          </div>
+        </el-dialog>
 
-      <el-dialog :title="convertTitle" :visible.sync="openConvert" width="780px">
-        <el-form ref="convertForm" :model="convertForm" :rules="convertRules" label-width="80px">
-          <el-form-item label="所属项目" prop="projectId">
-            <el-select v-model="convertForm.projectId" placeholder="所属项目" @change="proUsers" clearable size="small">
-              <el-option
-                v-for="item in projectList"
-                :key="item.projectId"
-                :label="item.projectName"
-                :value="item.projectId"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="任务时间" prop="taskTime">
-            <el-date-picker
-              v-model="taskTime"
-              value-format="yyyy-MM-dd HH:mm:ss"
-              type="datetimerange"
-              :picker-options="pickerOptions"
-              range-separator="至"
-              start-placeholder="设置开始时间"
-              end-placeholder="设置结束时间"
-              align="left" />
-          </el-form-item>
-          <el-form-item label="任务人员">
-            <el-popover v-for="item in convertForm.userList" :key="item.userId" placement="bottom-start" :title="item.nickName" width="200" trigger="hover">
-              <span>联系方式：{{ item.phonenumber }}</span>
-              <div style="text-align: right; margin: 0">
-                <el-button type="danger" size="small" @click="removeUser(item)">移除</el-button>
-              </div>
-              <el-avatar v-if="item.avatar === null || item.avatar === ''" slot="reference" style="margin: 0 5px -15px 0;font-size: 12px">{{ item.nickName }}</el-avatar>
-              <el-avatar v-else slot="reference" style="margin: 0 5px -15px 0" :src="url + item.avatar" />
-            </el-popover>
-            <el-popover v-model="userPopover" placement="bottom" width="200" trigger="manual">
-              <el-card v-for="item in userList" :key="item.userId" :body-style="{padding: '3px'}" shadow="hover" class="box-card" @click.native="chooseUser(item)">
-                <el-avatar v-if="item.avatar === null || item.avatar === ''" style="margin-bottom: -5px;font-size: 12px">{{ item.nickName }}</el-avatar>
-                <el-avatar v-else style="margin-bottom: -5px;" :src="url + item.avatar"/>
-                <span style="float: right; padding: 10px 10px;font-size: 15px; color: #97a8be">{{ item.nickName }}</span>
-              </el-card>
-              <el-button slot="reference" icon="el-icon-plus" circle @click="userPopover = true"/>
-            </el-popover>
-          </el-form-item>
-        </el-form>
-        <div slot="footer" class="dialog-footer" style="padding-top:20px">
-          <el-button type="primary" @click="convertSubmitForm">确 定</el-button>
-          <el-button @click="convertCancel">取 消</el-button>
-        </div>
-      </el-dialog>
+      </div>
+    </el-tab-pane>
+  </el-tabs>
 
-    </div>
 </template>
 
 <script>
   import Editor from '@/components/Editor';
+  import memoCalendar from "./memoCalendar";
   import { getMemo, addMemo, updateMemo, delMemo } from "@/api/memo";
   import { listUserByProject } from "@/api/system/user";
   import { listProjectByUser } from "@/api/project";
@@ -185,7 +183,8 @@
         ]),
       },
       components: {
-        Editor
+        Editor,
+        memoCalendar
       },
       data() {
           return {
@@ -217,7 +216,6 @@
                 { required: true, message: "内容不能为空", trigger: "blur" }
               ]
             },
-            calDrawer: false,
             calendarDate: new Date(),
             selectDate: [],
             selectDom:[],
@@ -371,9 +369,6 @@
             status: null
           };
           this.resetForm("form");
-        },
-        calDrawerWindow() {
-          this.calDrawer = true
         },
         handleConvert() {
           this.openConvert = true
