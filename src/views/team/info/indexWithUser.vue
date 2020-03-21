@@ -63,6 +63,8 @@
     </el-row>
 <!--    新增任务-->
     <new-task-dialog
+      :chooseProject="true"
+      :projectId="projectInfo.projectId"
       :projectList="pojectList"
       :dialogVisible.sync="newTaskDialog"
       @handleCancel="newTaskDialog = false"
@@ -192,14 +194,6 @@ export default {
       delProDialog: false,
       newTaskDialog: false,
       editTaskDialog: null,
-      // 新建任务对象
-      newTaskForm: {
-        projectId: null,
-        projectName: null,
-        taskName: null,
-        taskDate: null,
-        remark: null
-      },
       // 下拉
       taskSort1: [],
       taskSort2: [],
@@ -247,7 +241,6 @@ export default {
     },
     // 节点单击事件
     handleNodeClick(item) {
-      console.log(item)
       // this.sortList.userId = item.userId
       // this.getList(this.sortList)
     },
@@ -322,12 +315,6 @@ export default {
         this.activities = response.rows
         this.total = response.total;
       })
-    },
-    // 新建任务初始化
-    newTaskFun() {
-      this.newTaskForm.projectId = this.projectInfo.projectId
-      this.newTaskForm.projectName = this.projectInfo.projectName
-      this.newTaskDialog = true
     },
     // 新建任务关闭前
     handleNewTaskClose(done) {
@@ -457,7 +444,7 @@ export default {
     projectCommand(val) {
       switch (val) {
         case 'add':
-          this.newTaskFun()
+          this.newTaskDialog = true
           break
         case 'del':
           this.delProDialog = true

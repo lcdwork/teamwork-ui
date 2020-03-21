@@ -2,7 +2,7 @@
   <el-dialog title="新建任务" :visible.sync="dialogVisible" :before-close="handleClose" width="50%">
     <el-form ref="form" :model="dialogForm" :rules="rules" label-width="80px">
       <el-form-item label="所属项目" prop="projectId">
-        <el-select v-model="dialogForm.projectId" placeholder="所属项目" @change="proUsers" clearable size="small">
+        <el-select v-model="dialogForm.projectId" :disabled="chooseProject" placeholder="所属项目" @change="proUsers" clearable size="small">
           <el-option
             v-for="item in projectList"
             :key="item.projectId"
@@ -86,6 +86,18 @@ export default {
     // loading: {
     //   type: Boolean
     // },
+    chooseProject: {
+      type: Boolean,
+      default() {
+        return false
+      }
+    },
+    projectId: {
+      type: Number,
+      default() {
+        return null
+      }
+    },
     dialogVisible: {
       type: Boolean,
     }
@@ -191,6 +203,9 @@ export default {
           status: null,
         }
         this.resetForm("form")
+        if(this.chooseProject) {
+          this.dialogForm.projectId = this.projectId
+        }
       } else {
         this.userPopover = false
       }

@@ -258,7 +258,6 @@ export default {
         .catch(_ => {})
     },
     submitEditTaskForm(val) {
-      console.log(val)
       if(val !== null) {
         this.editTaskLoading = true
         updateTask(val).then(response => {
@@ -285,7 +284,6 @@ export default {
         .catch(_ => {})
     },
     submitDelTaskForm(val) {
-      console.log(val)
       this.delTaskLoading = true
       delTask(val).then(response => {
         this.delTaskLoading = false
@@ -309,7 +307,6 @@ export default {
         .catch(_ => {})
     },
     submitEditProjectForm(val) {
-      console.log(val)
       if(val !== null) {
         this.editLoading = true
         updateProject(val).then(response => {
