@@ -47,7 +47,7 @@
               <el-card :body-style="{padding: '0px'}" shadow="hover">
                 <div style="margin-left: 10px">
                   <h4>{{activity.content}}</h4>
-                  <p>{{activity.nickName}} 提交于 {{activity.operateTime}}</p>
+                  <p>{{activity.userName}} 提交于 {{activity.operateTime}}</p>
                 </div>
               </el-card>
             </el-timeline-item>
