@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="删除任务" :visible.sync="dialogVisible" top="5vh" :before-close="handleClose" width="30%">
+  <el-dialog title="删除任务" :visible.sync="dialogVisible" top="5vh" :before-close="handleClose" width="40%">
     <el-form ref="form" :model="dialogForm" label-width="80px">
       <el-form-item label="所属项目">
         <span><i class="el-icon-s-order" />{{ dialogForm.projectName }}</span>
